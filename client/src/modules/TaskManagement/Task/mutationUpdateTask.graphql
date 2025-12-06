@@ -1,0 +1,7 @@
+# import "./fragmentTask.graphql
+
+mutation UpdateTask($task: UpdateTaskInput!) {
+  updateTask(task: $task) {
+    ...TaskFragment
+  }
+}

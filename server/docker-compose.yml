@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    # [version]-alpine: linux distribution (smaller download)
+    image: postgres:15-alpine
+    container_name: sadbits-postgres-db
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=@admin123
+      - POSTGRES_DB=sadbits_db
+    
+    # Port mapping: connects computer to the container
+    # HOST_PORT:CONTAINER_PORT
+    ports:
+      - '5432:5432'
+
+    # Persist data
+    # Format : VOLUMES_NAME:CONTAINER_PATH
+    volumes:
+      - sadbits_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - sadbits-postgres-network
+
+
+# Top-level volumes section: Define all named volumes
+# Docker manages where thes are stored on local drive
+# Bane if tge volume used above in services.[serviceName].volumes
+volumes:
+  sadbits_postgres_data:
+
+# Top-level network - define all networks
+# Networks allow containers to communicate with each other
+networks:
+  sadbits-postgres-network:
+    # Network driver type
+    # bridge =  Default network type, allows container-to-container communication
+    # options: 
+      # host - uses the computer's network
+      # none - no network
+    driver: bridge
+

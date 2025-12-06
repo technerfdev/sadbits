@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tasks {
+  id          String        @id @db.Uuid
+  title       String        @db.VarChar(255)
+  description String?
+  completed   Boolean       @default(false)
+  dueDate     DateTime?     @map("due_date") @db.Timestamp(6)
+  priority    PriorityType?
+  createdAt   DateTime?     @map("created_at") @db.Timestamp(6)
+  createdBy   String?       @map("created_by") @db.Uuid
+  updatedAt   DateTime?     @map("updated_at") @db.Timestamp(6)
+  updatedBy   String?       @map("updated_by") @db.Uuid
+  assignedTo  String[]      @map("assigned_to") @db.Uuid
+  author      String?       @db.Uuid
+  projectId   String?       @map("project_id") @db.Uuid
+  archived    Boolean?      @default(false)
+  projects    Projects?     @relation(fields: [projectId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([completed], map: "idx_tasks_completed")
+  @@map("tasks")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Users {
+  id        String    @db.Uuid
+  firstName String    @map("first_name") @db.VarChar(255)
+  lastName  String    @map("last_name") @db.VarChar(255)
+  email     String    @unique @db.VarChar(255)
+  avatar    String?   @db.VarChar(500)
+  createdAt DateTime? @map("created_at") @db.Timestamptz(6)
+
+  @@map("users")
+}
+
+model Projects {
+  id          String    @id @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime? @map("created_at") @db.Timestamptz(6)
+  tasks       Tasks[]
+
+  @@map("projects")
+}
+
+enum PriorityType {
+  low
+  medium
+  high
+
+  @@map("priority_type")
+}

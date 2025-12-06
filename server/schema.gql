@@ -1,0 +1,79 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+directive @upper on FIELD_DEFINITION
+
+input CreateTaskInputDto {
+  assignedTo: [String!]
+  completed: Boolean = false
+  createdAt: String
+  createdBy: String
+  description: String
+  dueDate: String
+  priority: PriorityType
+  title: String!
+  updatedAt: String
+  updatedBy: String
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DeleteTaskResponse {
+  success: Boolean!
+}
+
+input FilterBy {
+  archived: Boolean
+  completed: Boolean
+  search: String
+}
+
+type Mutation {
+  createTask(task: CreateTaskInputDto!): Task!
+  deleteTask(id: ID!): DeleteTaskResponse!
+  updateTask(task: UpdateTaskInput!): Task!
+}
+
+"""Task priority levels"""
+enum PriorityType {
+  high
+  low
+  medium
+}
+
+type Query {
+  projects: String!
+  task(id: ID!): Task!
+  tasks(filterBy: FilterBy = {archived: false, completed: false}): [Task!]!
+}
+
+type Task {
+  archived: Boolean
+  author: String
+  completed: Boolean!
+  createdAt: DateTime
+  description: String
+  dueDate: DateTime
+  id: ID!
+  priority: PriorityType
+  title: String!
+  updatedAt: DateTime
+}
+
+input UpdateTaskInput {
+  assignedTo: [String!]
+  completed: Boolean = false
+  createdAt: String
+  createdBy: String
+  description: String
+  dueDate: String
+  id: String!
+  priority: PriorityType
+  title: String
+  updatedAt: String
+  updatedBy: String
+}

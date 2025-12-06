@@ -1,0 +1,7 @@
+generator client_template {
+  provider = "prisma-client-js"
+}
+
+datasource db_template {
+  provider = "postgresql"
+}

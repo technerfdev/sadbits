@@ -1,0 +1,7 @@
+# import "./fragmentTask.graphql"
+
+mutation CreateTask($task: CreateTaskInputDto!) {
+  createTask(task: $task) {
+    ...TaskFragment
+  }
+}

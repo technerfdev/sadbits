@@ -1,0 +1,7 @@
+#import "./fragmentTask.graphql";
+
+query GetTasks($filterBy: FilterBy) {
+  tasks(filterBy: $filterBy) {
+    ...TaskFragment
+  }
+}

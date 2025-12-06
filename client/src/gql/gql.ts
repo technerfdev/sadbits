@@ -1,0 +1,56 @@
+/* eslint-disable */
+import * as types from './graphql';
+
+
+
+/**
+ * Map of all GraphQL operations in the project.
+ *
+ * This map has several performance disadvantages:
+ * 1. It is not tree-shakeable, so it will include all operations in the project.
+ * 2. It is not minifiable, so the string of a GraphQL query will be multiple times inside the bundle.
+ * 3. It does not support dead code elimination, so it will add unused operations.
+ *
+ * Therefore it is highly recommended to use the babel or swc plugin for production.
+ * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
+ */
+type Documents = {
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}": typeof types.TaskFragmentFragmentDoc,
+    "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.CreateTaskDocument,
+    "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": typeof types.DeleteTaskDocument,
+    "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.UpdateTaskDocument,
+    "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}": typeof types.GetTasksDocument,
+};
+const documents: Documents = {
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}": types.TaskFragmentFragmentDoc,
+    "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.CreateTaskDocument,
+    "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": types.DeleteTaskDocument,
+    "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.UpdateTaskDocument,
+    "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}": types.GetTasksDocument,
+};
+
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}"): typeof import('./graphql').TaskFragmentFragmentDoc;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}"): typeof import('./graphql').CreateTaskDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}"): typeof import('./graphql').DeleteTaskDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}"): typeof import('./graphql').UpdateTaskDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}"): typeof import('./graphql').GetTasksDocument;
+
+
+export function graphql(source: string) {
+  return (documents as any)[source] ?? {};
+}

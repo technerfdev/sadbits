@@ -1,0 +1,9 @@
+fragment TaskFragment on Task {
+  id
+  title
+  description
+  priority
+  completed
+  dueDate
+  archived
+}
