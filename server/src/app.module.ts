@@ -13,7 +13,6 @@ import { ProjectsService } from './projects/projects.service';
 import { ProjectsResolver } from './projects/projects.resolver';
 import { ProjectsModule } from './projects/projects.module';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -53,9 +52,14 @@ import { UsersModule } from './users/users.module';
     ConfigModule,
     ProjectsModule,
     AuthModule,
-    UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaServices, ConfigService, ProjectsService, ProjectsResolver],
+  providers: [
+    AppService,
+    PrismaServices,
+    ConfigService,
+    ProjectsService,
+    ProjectsResolver,
+  ],
 })
 export class AppModule {}
