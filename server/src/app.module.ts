@@ -12,6 +12,8 @@ import { TaskModule } from './task/task.module';
 import { ProjectsService } from './projects/projects.service';
 import { ProjectsResolver } from './projects/projects.resolver';
 import { ProjectsModule } from './projects/projects.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -50,6 +52,8 @@ import { ProjectsModule } from './projects/projects.module';
     TaskModule,
     ConfigModule,
     ProjectsModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaServices, ConfigService, ProjectsService, ProjectsResolver],
