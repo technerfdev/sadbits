@@ -43,6 +43,7 @@ export default function EditTaskDialog({ task }: EditTaskDialogProps) {
       <DialogTrigger asChild>
         <Button size="icon-sm" variant="ghost">
           <PencilIcon />
+          Edit
         </Button>
       </DialogTrigger>
       <DialogContent>

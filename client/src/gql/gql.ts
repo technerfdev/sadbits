@@ -15,14 +15,20 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}": typeof types.TaskFragmentFragmentDoc,
+    "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": typeof types.CreateProjectDocument,
+    "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": typeof types.UpdateProjectDocument,
+    "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": typeof types.GetProjectsDocument,
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}": typeof types.TaskFragmentFragmentDoc,
     "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.CreateTaskDocument,
     "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": typeof types.DeleteTaskDocument,
     "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.UpdateTaskDocument,
     "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}": typeof types.GetTasksDocument,
 };
 const documents: Documents = {
-    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}": types.TaskFragmentFragmentDoc,
+    "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": types.CreateProjectDocument,
+    "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": types.UpdateProjectDocument,
+    "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": types.GetProjectsDocument,
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}": types.TaskFragmentFragmentDoc,
     "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.CreateTaskDocument,
     "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": types.DeleteTaskDocument,
     "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.UpdateTaskDocument,
@@ -32,7 +38,19 @@ const documents: Documents = {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n}"): typeof import('./graphql').TaskFragmentFragmentDoc;
+export function graphql(source: "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}"): typeof import('./graphql').CreateProjectDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}"): typeof import('./graphql').UpdateProjectDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}"): typeof import('./graphql').GetProjectsDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}"): typeof import('./graphql').TaskFragmentFragmentDoc;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

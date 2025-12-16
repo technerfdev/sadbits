@@ -41,6 +41,8 @@ type Mutation {
   createProject(project: CreateProjectInput!): Project!
   createTask(task: CreateTaskInputDto!): Task!
   deleteTask(id: ID!): DeleteTaskResponse!
+  duplicateProject(projectId: String!): Project!
+  updateProject(project: UpdateProjectInput!): Project!
   updateTask(task: UpdateTaskInput!): Task!
 }
 
@@ -75,6 +77,12 @@ type Task {
   priority: PriorityType
   title: String!
   updatedAt: DateTime
+}
+
+input UpdateProjectInput {
+  description: String
+  id: String!
+  name: String
 }
 
 input UpdateTaskInput {

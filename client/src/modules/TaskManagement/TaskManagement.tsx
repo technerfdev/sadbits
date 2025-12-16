@@ -1,151 +1,35 @@
-import { Checkbox } from "@/components/ui/checkbox";
-
+import Typography from "@/components/Typography";
 import { Button } from "@/components/ui/button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemGroup,
-} from "@/components/ui/item";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import {
-  DeleteTaskDocument,
-  GetTasksDocument,
-  PriorityType,
-  UpdateTaskDocument,
-  type GetTasksQuery,
-  type GetTasksQueryVariables,
-  type UpdateTaskMutation,
-  type UpdateTaskMutationVariables,
-} from "@/gql/graphql";
-import { gql } from "@apollo/client";
-import { useMutation, useQuery } from "@apollo/client/react";
-import { Flag, PlusCircleIcon, Trash2Icon } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { JSX } from "react/jsx-runtime";
-import { toast } from "sonner";
-import AddTaskDialog from "./Task/AddTaskDialog";
-import EditTaskDialog from "./Task/EditTaskDialog";
-import type { Task } from "./TaskManagement.interfaces";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Typography from "@/components/Typography";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { ItemGroup } from "@/components/ui/item";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  GetProjectsDocument,
+  GetTasksDocument,
+  type GetProjectsQuery,
+  type GetProjectsQueryVariables,
+  type GetTasksQuery,
+  type GetTasksQueryVariables,
+} from "@/gql/graphql";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
+import { FolderIcon, FolderOpenIcon, PlusCircleIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { JSX } from "react/jsx-runtime";
 import ProjectDialog from "./Project/ProjectDialog";
-
-function PriorityFlag({ priority }: { priority: PriorityType }) {
-  switch (priority) {
-    case PriorityType.High:
-      return <Flag color="red" size="0.8rem" fill="red" />;
-    case PriorityType.Medium:
-      return <Flag color="orange" size="0.8rem" fill="orange" />;
-    default:
-      return <Flag color="grey" size="0.8rem" fill="grey" />;
-  }
-}
-
-function TaskRow({ task }: { task: Task; selected?: boolean }): JSX.Element {
-  const [deleteTask] = useMutation(gql(DeleteTaskDocument.toString()), {
-    update: (cache) => {
-      cache.evict({
-        id: cache.identify({ __typename: "Task", id: task.id }),
-      });
-      cache.gc();
-    },
-  });
-
-  const [updateTask, { loading: updating }] = useMutation<
-    UpdateTaskMutation,
-    UpdateTaskMutationVariables
-  >(gql(UpdateTaskDocument.toString()), {
-    update: (cache, { data: mutationData }) => {
-      cache.modify({
-        id: cache.identify({ __typename: "Task", id: task.id }),
-        fields: {
-          completed: () => Boolean(mutationData?.updateTask.completed),
-        },
-      });
-    },
-  });
-
-  return (
-    <Item
-      key={`${task.id}-${task.updatedAt}`}
-      variant="outline"
-      size="sm"
-      className="flex justify-center items-start"
-    >
-      <ItemActions>
-        <Checkbox
-          id={task.id}
-          checked={task.completed}
-          disabled={updating}
-          onCheckedChange={async (checked) => {
-            await updateTask({
-              variables: {
-                task: {
-                  id: task.id,
-                  completed: Boolean(checked),
-                },
-              },
-            });
-          }}
-        />
-      </ItemActions>
-      <ItemContent>
-        <Label htmlFor={task.id} className="font-semibold">
-          {task.title}
-        </Label>
-        {task.description && <p className="text-sm">{task.description}</p>}
-        <p className="text-xs text-gray-500 flex whitespace-nowrap gap-0.5">
-          Due:{" "}
-          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"} |
-          <span className="flex items-center gap-0.5">
-            Priority:
-            {task.priority ? (
-              <span className="flex items-center gap-0.5">
-                <PriorityFlag priority={task.priority} />
-                {task.priority.toUpperCase()}
-              </span>
-            ) : (
-              "N/A"
-            )}
-          </span>
-        </p>
-      </ItemContent>
-      <ItemActions>
-        <div className="flex gap-1">
-          <EditTaskDialog task={task} />
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            className="hover:text-red-600"
-            onClick={async () => {
-              const res = await deleteTask({ variables: { id: task.id } });
-              if (!res.data) {
-                toast.error("failed");
-                return;
-              }
-
-              toast.success("deleted");
-            }}
-          >
-            <Trash2Icon />
-          </Button>
-        </div>
-      </ItemActions>
-    </Item>
-  );
-}
+import ProjectItemRow from "./Project/ProjectItemRow";
+import AddTaskDialog from "./Task/AddTaskDialog";
+import TaskRow from "./TaskRow";
 
 function NewActions(): JSX.Element {
   const [opening, setOpening] = useState<"task" | "project" | null>(null);
@@ -182,11 +66,19 @@ function NewActions(): JSX.Element {
 
 export default function TaskManagement(): JSX.Element {
   const [search, setSearch] = useState<string | null>(null);
+  const [folderOpening, setFolderOpening] = useState<string | null>(null);
 
   const { data, refetch, loading } = useQuery<
     GetTasksQuery,
     GetTasksQueryVariables
   >(gql(GetTasksDocument.toString()), {
+    fetchPolicy: "cache-and-network",
+  });
+
+  const { data: projectsData } = useQuery<
+    GetProjectsQuery,
+    GetProjectsQueryVariables
+  >(gql(GetProjectsDocument.toString()), {
     fetchPolicy: "cache-and-network",
   });
 
@@ -222,14 +114,35 @@ export default function TaskManagement(): JSX.Element {
           </InputGroup>
         </div>
       </div>
-      <ItemGroup className="gap-2">
-        {!data?.tasks.length ? (
-          <span>No task</span>
-        ) : (
-          !loading &&
-          data?.tasks?.map((task) => <TaskRow key={task.id} task={task} />)
+      <div className="grid grid-cols-[10rem_1fr]">
+        {projectsData?.projects && (
+          <ul>
+            {projectsData?.projects.map((p) => (
+              <ProjectItemRow
+                project={p}
+                onClick={() => {
+                  if (folderOpening === p.id) {
+                    setFolderOpening(null);
+                    return;
+                  }
+                  setFolderOpening(p.id);
+                }}
+                icon={
+                  folderOpening === p.id ? <FolderOpenIcon /> : <FolderIcon />
+                }
+              />
+            ))}
+          </ul>
         )}
-      </ItemGroup>
+        <ItemGroup className="gap-2">
+          {!data?.tasks.length ? (
+            <span>No task</span>
+          ) : (
+            !loading &&
+            data?.tasks?.map((task) => <TaskRow key={task.id} task={task} />)
+          )}
+        </ItemGroup>
+      </div>
     </div>
   );
 }

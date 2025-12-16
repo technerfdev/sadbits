@@ -18,6 +18,11 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export type CreateProjectInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
 export type CreateTaskInputDto = {
   assignedTo?: InputMaybe<Array<Scalars['String']['input']>>;
   completed?: InputMaybe<Scalars['Boolean']['input']>;
@@ -37,16 +42,24 @@ export type DeleteTaskResponse = {
 };
 
 export type FilterBy = {
+  archived?: InputMaybe<Scalars['Boolean']['input']>;
   completed?: InputMaybe<Scalars['Boolean']['input']>;
-  deletedOnly?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createProject: Project;
   createTask: Task;
   deleteTask: DeleteTaskResponse;
+  duplicateProject: Project;
+  updateProject: Project;
   updateTask: Task;
+};
+
+
+export type MutationCreateProjectArgs = {
+  project: CreateProjectInput;
 };
 
 
@@ -57,6 +70,16 @@ export type MutationCreateTaskArgs = {
 
 export type MutationDeleteTaskArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDuplicateProjectArgs = {
+  projectId: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateProjectArgs = {
+  project: UpdateProjectInput;
 };
 
 
@@ -71,9 +94,17 @@ export enum PriorityType {
   Medium = 'medium'
 }
 
+export type Project = {
+  __typename?: 'Project';
+  created_at: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
-  projects: Scalars['String']['output'];
+  projects: Array<Project>;
   task: Task;
   tasks: Array<Task>;
 };
@@ -102,6 +133,12 @@ export type Task = {
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
+export type UpdateProjectInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateTaskInput = {
   assignedTo?: InputMaybe<Array<Scalars['String']['input']>>;
   completed?: InputMaybe<Scalars['Boolean']['input']>;
@@ -116,14 +153,33 @@ export type UpdateTaskInput = {
   updatedBy?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type TaskFragmentFragment = { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null };
+export type CreateProjectMutationVariables = Exact<{
+  project: CreateProjectInput;
+}>;
+
+
+export type CreateProjectMutation = { __typename?: 'Mutation', createProject: { __typename?: 'Project', id: string, name: string, description?: string | null } };
+
+export type UpdateProjectMutationVariables = Exact<{
+  project: UpdateProjectInput;
+}>;
+
+
+export type UpdateProjectMutation = { __typename?: 'Mutation', updateProject: { __typename?: 'Project', id: string } };
+
+export type GetProjectsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetProjectsQuery = { __typename?: 'Query', projects: Array<{ __typename?: 'Project', id: string, name: string, description?: string | null }> };
+
+export type TaskFragmentFragment = { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null, archived?: boolean | null };
 
 export type CreateTaskMutationVariables = Exact<{
   task: CreateTaskInputDto;
 }>;
 
 
-export type CreateTaskMutation = { __typename?: 'Mutation', createTask: { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null } };
+export type CreateTaskMutation = { __typename?: 'Mutation', createTask: { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null, archived?: boolean | null } };
 
 export type DeleteTaskMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -137,14 +193,14 @@ export type UpdateTaskMutationVariables = Exact<{
 }>;
 
 
-export type UpdateTaskMutation = { __typename?: 'Mutation', updateTask: { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null } };
+export type UpdateTaskMutation = { __typename?: 'Mutation', updateTask: { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null, archived?: boolean | null } };
 
 export type GetTasksQueryVariables = Exact<{
   filterBy?: InputMaybe<FilterBy>;
 }>;
 
 
-export type GetTasksQuery = { __typename?: 'Query', tasks: Array<{ __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null }> };
+export type GetTasksQuery = { __typename?: 'Query', tasks: Array<{ __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null, archived?: boolean | null }> };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -172,8 +228,34 @@ export const TaskFragmentFragmentDoc = new TypedDocumentString(`
   priority
   completed
   dueDate
+  archived
 }
     `, {"fragmentName":"TaskFragment"}) as unknown as TypedDocumentString<TaskFragmentFragment, unknown>;
+export const CreateProjectDocument = new TypedDocumentString(`
+    mutation CreateProject($project: CreateProjectInput!) {
+  createProject(project: $project) {
+    id
+    name
+    description
+  }
+}
+    `) as unknown as TypedDocumentString<CreateProjectMutation, CreateProjectMutationVariables>;
+export const UpdateProjectDocument = new TypedDocumentString(`
+    mutation UpdateProject($project: UpdateProjectInput!) {
+  updateProject(project: $project) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<UpdateProjectMutation, UpdateProjectMutationVariables>;
+export const GetProjectsDocument = new TypedDocumentString(`
+    query GetProjects {
+  projects {
+    id
+    name
+    description
+  }
+}
+    `) as unknown as TypedDocumentString<GetProjectsQuery, GetProjectsQueryVariables>;
 export const CreateTaskDocument = new TypedDocumentString(`
     mutation CreateTask($task: CreateTaskInputDto!) {
   createTask(task: $task) {
@@ -187,6 +269,7 @@ export const CreateTaskDocument = new TypedDocumentString(`
   priority
   completed
   dueDate
+  archived
 }`) as unknown as TypedDocumentString<CreateTaskMutation, CreateTaskMutationVariables>;
 export const DeleteTaskDocument = new TypedDocumentString(`
     mutation DeleteTask($id: ID!) {
@@ -208,6 +291,7 @@ export const UpdateTaskDocument = new TypedDocumentString(`
   priority
   completed
   dueDate
+  archived
 }`) as unknown as TypedDocumentString<UpdateTaskMutation, UpdateTaskMutationVariables>;
 export const GetTasksDocument = new TypedDocumentString(`
     query GetTasks($filterBy: FilterBy) {
@@ -222,4 +306,5 @@ export const GetTasksDocument = new TypedDocumentString(`
   priority
   completed
   dueDate
+  archived
 }`) as unknown as TypedDocumentString<GetTasksQuery, GetTasksQueryVariables>;

@@ -12,7 +12,6 @@ import { TaskModule } from './task/task.module';
 import { ProjectsService } from './projects/projects.service';
 import { ProjectsResolver } from './projects/projects.resolver';
 import { ProjectsModule } from './projects/projects.module';
-import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -51,7 +50,6 @@ import { AuthModule } from './auth/auth.module';
     TaskModule,
     ConfigModule,
     ProjectsModule,
-    AuthModule,
   ],
   controllers: [AppController],
   providers: [

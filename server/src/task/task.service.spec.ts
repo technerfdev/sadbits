@@ -3,6 +3,7 @@ import { PriorityType } from '@prisma/client';
 import { PrismaServices } from '../prisma/prisma.service';
 import { TaskService } from './task.service';
 
+const MOCK_ID = '00000000-0000-0000-0000-000000000000';
 const mockPrismaService = {
   tasks: {
     create: jest.fn(),
@@ -10,7 +11,7 @@ const mockPrismaService = {
 };
 
 jest.mock('uuid', () => ({
-  v4: () => '00000000-0000-0000-0000-000000000000',
+  v4: () => MOCK_ID,
 }));
 
 describe('TaskService', () => {
@@ -41,7 +42,7 @@ describe('TaskService', () => {
     };
 
     const res = await service.create(mock);
-    expect(res.id).toEqual('00000000-0000-0000-0000-000000000000');
+    expect(res.id).toEqual(MOCK_ID);
 
     mockPrismaService.tasks.create.mockResolvedValue(mock);
     expect(mockPrismaService.tasks.create).toHaveBeenCalledTimes(1);

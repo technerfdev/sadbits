@@ -2,6 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ProjectsService } from './projects.service';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { Project } from './entities/project.entity';
+import { UpdateProjectInput } from './dto/update-project-input.dto';
 
 @Resolver()
 export class ProjectsResolver {
@@ -15,5 +16,15 @@ export class ProjectsResolver {
   @Mutation(() => Project)
   createProject(@Args('project') task: CreateProjectInput) {
     return this.projectsService.create(task);
+  }
+
+  @Mutation(() => Project)
+  duplicateProject(@Args('projectId') id: string) {
+    return this.projectsService.duplicate(id);
+  }
+
+  @Mutation(() => Project)
+  updateProject(@Args('project') project: UpdateProjectInput) {
+    return this.projectsService.update(project);
   }
 }

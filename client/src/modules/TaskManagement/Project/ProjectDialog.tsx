@@ -17,6 +17,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  CreateProjectDocument,
+  type CreateProjectMutation,
+  type CreateProjectMutationVariables,
+} from "@/gql/graphql";
+import { gql } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type JSX } from "react";
 import { useForm } from "react-hook-form";
@@ -39,6 +46,11 @@ export default function ProjectDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): JSX.Element {
+  const [createProject] = useMutation<
+    CreateProjectMutation,
+    CreateProjectMutationVariables
+  >(gql(CreateProjectDocument.toString()), {optimisticResponse:});
+
   const form = useForm<ProjectType>({
     resolver: createProjectResolver,
     defaultValues: { taskName: "" },
@@ -62,8 +74,15 @@ export default function ProjectDialog({
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((values) => {
-              // Handle submit here
+            onSubmit={form.handleSubmit(async (values) => {
+              await createProject({
+                variables: {
+                  project: {
+                    name: values.taskName,
+                    description: values.description,
+                  },
+                },
+              });
             })}
             className="flex flex-col gap-4"
           >
@@ -106,8 +125,7 @@ export default function ProjectDialog({
                   Discard
                 </Button>
               </DialogClose>
-              <Button type="submit">
-                {/* {loading && <Spinner />} */}
+              <Button type="submit"> 
                 <Typography>Submit</Typography>
               </Button>
             </DialogFooter>
