@@ -1,0 +1,20 @@
+query GetCFAnalytics {
+  cloudflareAnalytics {
+    totals {
+      requests
+      bandwidth
+      threats
+      pageViews
+      uniques
+      cachedRequests
+    }
+    timeseries {
+      timestamp
+      requests
+      bandwidth
+      threats
+      pageViews
+      uniques
+    }
+  }
+}

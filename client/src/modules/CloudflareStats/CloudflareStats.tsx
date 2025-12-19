@@ -1,119 +1,210 @@
-import axios from "axios";
-import { CloudIcon, Loader2, TrendingUp, Eye, Shield } from "lucide-react";
+import {
+  GetCfAnalyticsDocument,
+  type GetCfAnalyticsQuery,
+  type GetCfAnalyticsQueryVariables,
+} from "@/gql/graphql";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
+import {
+  Database,
+  Eye,
+  Loader2,
+  Shield,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
 
-interface CloudflareStats {
-  requests: number;
-  bandwidth: number;
-  threats: number;
-  pageviews: number;
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(2)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(2)}K`;
+  return num.toLocaleString();
 }
 
 export default function CloudflareAnalytics(): JSX.Element {
-  const [stats, setStats] = useState<CloudflareStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCloudflareStats = async () => {
-      const apiToken = import.meta.env.VITE_CLOUDFLARE_API_TOKEN;
-      const zoneId = import.meta.env.VITE_CLOUDFLARE_ZONE_ID;
-
-      if (!apiToken || !zoneId) {
-        setError("Cloudflare credentials not configured");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-        const response = await axios.get(
-          `https://api.cloudflare.com/client/v4/zones/${zoneId}/analytics/dashboard`,
-          {
-            headers: {
-              Authorization: `Bearer ${apiToken}`,
-              "Content-Type": "application/json",
-            },
-            params: { since, continuous: true },
-          }
-        );
-
-        const { result } = response.data;
-        const totals = result.totals;
-
-        setStats({
-          requests: totals.requests?.all || 0,
-          bandwidth: Math.round((totals.bandwidth?.all || 0) / 1024 / 1024),
-          threats: totals.threats?.all || 0,
-          pageviews: totals.pageviews?.all || 0,
-        });
-      } catch (err) {
-        setError("Failed to fetch Cloudflare data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCloudflareStats();
-  }, []);
+  const { data, loading, error } = useQuery<
+    GetCfAnalyticsQuery,
+    GetCfAnalyticsQueryVariables
+  >(gql(GetCfAnalyticsDocument.toString()), {
+    fetchPolicy: "cache-and-network",
+  });
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-4 rounded-lg bg-background border border-border/40">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center p-8 rounded-xl bg-background border border-border/40">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-4 rounded-lg bg-background border border-border/40">
-        <CloudIcon className="h-5 w-5 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">{error}</span>
+      <div className="flex flex-col items-center gap-3 p-8 rounded-xl bg-background border border-border/40">
+        <Shield className="h-12 w-12 text-destructive/50" />
+        <div className="flex flex-col items-center text-center">
+          <span className="font-semibold">Analytics Unavailable</span>
+          <span className="text-sm text-muted-foreground">{error.message}</span>
+        </div>
       </div>
     );
   }
 
+  const analytics = data?.cloudflareAnalytics;
+  if (!analytics) return <div />;
+
+  const { totals } = analytics;
+
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg bg-background border border-border/40">
-      <div className="text-sm font-semibold">Cloudflare (24h)</div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <TrendingUp className="h-3 w-3" />
-            <span className="text-xs">Requests</span>
-          </div>
-          <span className="text-lg font-bold">
-            {stats?.requests.toLocaleString()}
-          </span>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">
+            albertnguyen.com
+          </h2>
+          <p className="text-sm text-muted-foreground">Last 24 hours</p>
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Eye className="h-3 w-3" />
-            <span className="text-xs">Pageviews</span>
-          </div>
-          <span className="text-lg font-bold">
-            {stats?.pageviews.toLocaleString()}
-          </span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs font-medium text-primary">Live</span>
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Shield className="h-3 w-3" />
-            <span className="text-xs">Threats</span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl transition-all group-hover:bg-blue-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Total
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight">
+                {formatNumber(totals.requests)}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">Requests</div>
+            </div>
           </div>
-          <span className="text-lg font-bold text-red-500">
-            {stats?.threats.toLocaleString()}
-          </span>
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <CloudIcon className="h-3 w-3" />
-            <span className="text-xs">Bandwidth</span>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl transition-all group-hover:bg-purple-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Eye className="h-5 w-5 text-purple-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Visits
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight">
+                {formatNumber(totals.pageViews)}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Page Views
+              </div>
+            </div>
           </div>
-          <span className="text-lg font-bold">{stats?.bandwidth} MB</span>
+        </div>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl transition-all group-hover:bg-cyan-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-cyan-500/10">
+                <Users className="h-5 w-5 text-cyan-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Unique
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight">
+                {formatNumber(totals.uniques)}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">Visitors</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-full blur-2xl transition-all group-hover:bg-green-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-green-500/10">
+                <Database className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Transferred
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight">
+                {formatBytes(totals.bandwidth)}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Bandwidth
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl transition-all group-hover:bg-amber-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <Zap className="h-5 w-5 text-amber-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Performance
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight">
+                {totals.cachedRequests.toFixed(1)}%
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Cache Hit Rate
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20 p-6 transition-all hover:shadow-lg hover:border-primary/50">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl transition-all group-hover:bg-red-500/20" />
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <Shield className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                Security
+              </div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold tracking-tight text-red-500">
+                {formatNumber(totals.threats)}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Threats Blocked
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

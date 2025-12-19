@@ -15,6 +15,7 @@ import * as types from './graphql';
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "query GetCFAnalytics {\n  cloudflareAnalytics {\n    totals {\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n      cachedRequests\n    }\n    timeseries {\n      timestamp\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n    }\n  }\n}": typeof types.GetCfAnalyticsDocument,
     "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": typeof types.CreateProjectDocument,
     "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": typeof types.UpdateProjectDocument,
     "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": typeof types.GetProjectsDocument,
@@ -25,6 +26,7 @@ type Documents = {
     "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}": typeof types.GetTasksDocument,
 };
 const documents: Documents = {
+    "query GetCFAnalytics {\n  cloudflareAnalytics {\n    totals {\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n      cachedRequests\n    }\n    timeseries {\n      timestamp\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n    }\n  }\n}": types.GetCfAnalyticsDocument,
     "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": types.CreateProjectDocument,
     "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": types.UpdateProjectDocument,
     "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": types.GetProjectsDocument,
@@ -35,6 +37,10 @@ const documents: Documents = {
     "query GetTasks($filterBy: FilterBy) {\n  tasks(filterBy: $filterBy) {\n    ...TaskFragment\n  }\n}": types.GetTasksDocument,
 };
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "query GetCFAnalytics {\n  cloudflareAnalytics {\n    totals {\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n      cachedRequests\n    }\n    timeseries {\n      timestamp\n      requests\n      bandwidth\n      threats\n      pageViews\n      uniques\n    }\n  }\n}"): typeof import('./graphql').GetCfAnalyticsDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

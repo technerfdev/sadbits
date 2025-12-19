@@ -18,6 +18,32 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export type Analytics = {
+  __typename?: 'Analytics';
+  timeseries: Array<AnalyticsTimeseries>;
+  totals: AnalyticsTotals;
+};
+
+export type AnalyticsTimeseries = {
+  __typename?: 'AnalyticsTimeseries';
+  bandwidth: Scalars['Int']['output'];
+  pageViews: Scalars['Int']['output'];
+  requests: Scalars['Int']['output'];
+  threats: Scalars['Int']['output'];
+  timestamp: Scalars['String']['output'];
+  uniques: Scalars['Int']['output'];
+};
+
+export type AnalyticsTotals = {
+  __typename?: 'AnalyticsTotals';
+  bandwidth: Scalars['Int']['output'];
+  cachedRequests: Scalars['Float']['output'];
+  pageViews: Scalars['Int']['output'];
+  requests: Scalars['Int']['output'];
+  threats: Scalars['Int']['output'];
+  uniques: Scalars['Int']['output'];
+};
+
 export type CreateProjectInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -104,9 +130,16 @@ export type Project = {
 
 export type Query = {
   __typename?: 'Query';
+  cloudflareAnalytics: Analytics;
   projects: Array<Project>;
   task: Task;
   tasks: Array<Task>;
+};
+
+
+export type QueryCloudflareAnalyticsArgs = {
+  since?: InputMaybe<Scalars['String']['input']>;
+  until?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -152,6 +185,11 @@ export type UpdateTaskInput = {
   updatedAt?: InputMaybe<Scalars['String']['input']>;
   updatedBy?: InputMaybe<Scalars['String']['input']>;
 };
+
+export type GetCfAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCfAnalyticsQuery = { __typename?: 'Query', cloudflareAnalytics: { __typename?: 'Analytics', totals: { __typename?: 'AnalyticsTotals', requests: number, bandwidth: number, threats: number, pageViews: number, uniques: number, cachedRequests: number }, timeseries: Array<{ __typename?: 'AnalyticsTimeseries', timestamp: string, requests: number, bandwidth: number, threats: number, pageViews: number, uniques: number }> } };
 
 export type CreateProjectMutationVariables = Exact<{
   project: CreateProjectInput;
@@ -231,6 +269,28 @@ export const TaskFragmentFragmentDoc = new TypedDocumentString(`
   archived
 }
     `, {"fragmentName":"TaskFragment"}) as unknown as TypedDocumentString<TaskFragmentFragment, unknown>;
+export const GetCfAnalyticsDocument = new TypedDocumentString(`
+    query GetCFAnalytics {
+  cloudflareAnalytics {
+    totals {
+      requests
+      bandwidth
+      threats
+      pageViews
+      uniques
+      cachedRequests
+    }
+    timeseries {
+      timestamp
+      requests
+      bandwidth
+      threats
+      pageViews
+      uniques
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<GetCfAnalyticsQuery, GetCfAnalyticsQueryVariables>;
 export const CreateProjectDocument = new TypedDocumentString(`
     mutation CreateProject($project: CreateProjectInput!) {
   createProject(project: $project) {

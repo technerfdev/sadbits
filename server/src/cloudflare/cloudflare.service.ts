@@ -28,9 +28,9 @@ export class CloudflareService {
       );
     }
 
-    // httpRequests1hGroups max range is 3 days (259200 seconds)
+    // httpRequests1hGroups - 24 hours (86400 seconds)
     const sinceDate =
-      since || new Date(Date.now() - 3 * 24 * 59 * 60 * 1000).toISOString();
+      since || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const untilDate = until || new Date().toISOString();
 
     const query = `
@@ -39,7 +39,7 @@ export class CloudflareService {
           zones(filter: { zoneTag: $zoneTag }) {
             httpRequests1hGroups(
               orderBy: [datetime_ASC]
-              limit: 70
+              limit: 24
               filter: { datetime_geq: $start, datetime_lt: $end }
             ) {
               dimensions {
