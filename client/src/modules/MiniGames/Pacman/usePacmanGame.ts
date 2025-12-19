@@ -1,5 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  CELL_SIZE,
+  CHASE_DURATION,
+  COLORS,
+  DIFFICULTY_SPEED_MULTIPLIERS,
+  DOT_POINTS,
+  GHOST_EATEN_SPEED,
+  GHOST_FRIGHTENED_SPEED,
+  GHOST_NORMAL_SPEED,
+  GHOST_POINTS,
+  GHOST_SCATTER_TARGETS,
+  INITIAL_LIVES,
+  MAZE_LAYOUT,
+  PACMAN_SPEED,
+  POWER_MODE_DURATION,
+  POWER_PELLET_POINTS,
+  SCATTER_DURATION,
+} from "./constants";
 import type {
+  Difficulty,
   Direction,
   GameState,
   Ghost,
@@ -8,26 +29,8 @@ import type {
   Position,
 } from "./types";
 import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
-  CELL_SIZE,
-  COLORS,
-  DOT_POINTS,
-  GHOST_EATEN_SPEED,
-  GHOST_FRIGHTENED_SPEED,
-  GHOST_NORMAL_SPEED,
-  GHOST_POINTS,
-  GHOST_SCATTER_TARGETS,
-  GRID_WIDTH,
-  INITIAL_LIVES,
-  MAZE_LAYOUT,
-  PACMAN_SPEED,
-  POWER_MODE_DURATION,
-  POWER_PELLET_POINTS,
-  GRID_HEIGHT,
-} from "./constants";
-import {
   canMove,
+  getAStarDirection,
   getBestDirection,
   getDirectionVector,
   getDistance,
@@ -42,10 +45,12 @@ import {
 
 export function usePacmanGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
-  const [gameState, setGameState] = useState<GameState>(initializeGame);
+  const animationFrameRef = useRef<number>(0);
+  const [gameState, setGameState] = useState<GameState>(() =>
+    initializeGame("normal")
+  );
 
-  function initializeGame(): GameState {
+  function initializeGame(difficulty: Difficulty = "normal"): GameState {
     const dots = new Set<string>();
     const powerPellets = new Set<string>();
 
@@ -60,45 +65,52 @@ export function usePacmanGame() {
     }
 
     const pacman: PacmanState = {
-      position: { x: gridToPixel(22), y: gridToPixel(38) },
+      position: { x: gridToPixel(22), y: gridToPixel(38) }, // TODO: random it
       direction: "NONE",
       nextDirection: "NONE",
       mouthAngle: 0,
       mouthOpen: true,
     };
 
+    // In Asian mode, start in chase mode instead of scatter
+    const initialMode = difficulty === "asian" ? "chase" : "scatter";
+
     const ghosts: Ghost[] = [
       {
         id: "red",
         position: { x: gridToPixel(12), y: gridToPixel(16) },
         direction: "LEFT",
-        mode: "scatter",
+        mode: initialMode,
         targetTile: { x: 12, y: 16 },
         scatterTarget: GHOST_SCATTER_TARGETS.red,
+        modeTimer: 0,
       },
       {
         id: "pink",
         position: { x: gridToPixel(12), y: gridToPixel(17) },
         direction: "UP",
-        mode: "scatter",
+        mode: initialMode,
         targetTile: { x: 12, y: 17 },
         scatterTarget: GHOST_SCATTER_TARGETS.pink,
+        modeTimer: 0,
       },
       {
         id: "cyan",
         position: { x: gridToPixel(11), y: gridToPixel(16) },
         direction: "UP",
-        mode: "scatter",
+        mode: initialMode,
         targetTile: { x: 11, y: 16 },
         scatterTarget: GHOST_SCATTER_TARGETS.cyan,
+        modeTimer: 0,
       },
       {
         id: "orange",
         position: { x: gridToPixel(13), y: gridToPixel(16) },
         direction: "UP",
-        mode: "scatter",
+        mode: initialMode,
         targetTile: { x: 13, y: 16 },
         scatterTarget: GHOST_SCATTER_TARGETS.orange,
+        modeTimer: 0,
       },
     ];
 
@@ -107,6 +119,7 @@ export function usePacmanGame() {
       lives: INITIAL_LIVES,
       level: 1,
       gameStatus: "menu",
+      difficulty,
       pacman,
       ghosts,
       dots,
@@ -115,6 +128,9 @@ export function usePacmanGame() {
       powerModeTimer: 0,
       ghostsEaten: 0,
       animationFrame: 0,
+      globalModeTimer:
+        difficulty === "asian" ? CHASE_DURATION : SCATTER_DURATION,
+      globalMode: difficulty === "asian" ? "chase" : "scatter",
     };
   }
 
@@ -133,7 +149,14 @@ export function usePacmanGame() {
   }, []);
 
   const resetGame = useCallback(() => {
-    setGameState(initializeGame());
+    setGameState((prev) => initializeGame(prev.difficulty));
+  }, []);
+
+  const setDifficulty = useCallback((difficulty: Difficulty) => {
+    setGameState(() => ({
+      ...initializeGame(difficulty),
+      gameStatus: "menu",
+    }));
   }, []);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
@@ -221,14 +244,23 @@ export function usePacmanGame() {
 
   function updateGhost(ghost: Ghost, state: GameState): Ghost {
     let { position, direction, mode } = ghost;
-    const { pacman, powerMode } = state;
+    const { pacman, powerMode, difficulty, globalMode } = state;
 
+    // Update mode based on power mode
     if (mode === "frightened" && !powerMode) {
-      mode = "chase";
+      mode = difficulty === "asian" ? "chase" : globalMode;
     }
 
     if (mode !== "frightened" && powerMode && mode !== "eaten") {
       mode = "frightened";
+    }
+
+    // Asian mode - ALWAYS chase, NEVER scatter (except when frightened or eaten)
+    if (difficulty === "asian" && mode !== "frightened" && mode !== "eaten") {
+      mode = "chase";
+    } else if (mode !== "frightened" && mode !== "eaten") {
+      // Update mode based on global mode timer for other difficulties
+      mode = globalMode;
     }
 
     let targetTile: Position;
@@ -238,9 +270,10 @@ export function usePacmanGame() {
 
       const homePos = { x: gridToPixel(12), y: gridToPixel(16) };
       if (getDistance(position, homePos) < CELL_SIZE) {
-        mode = "chase";
+        mode = globalMode;
       }
     } else if (mode === "frightened") {
+      // In frightened mode, move more randomly but still somewhat strategic
       const validDirections = ["UP", "DOWN", "LEFT", "RIGHT"] as Direction[];
       const randomDir =
         validDirections[Math.floor(Math.random() * validDirections.length)];
@@ -252,6 +285,7 @@ export function usePacmanGame() {
     } else if (mode === "scatter") {
       targetTile = ghost.scatterTarget;
     } else {
+      // Chase mode - use unique AI for each ghost
       targetTile = getTargetTile(ghost.id, pacman, state);
     }
 
@@ -267,12 +301,20 @@ export function usePacmanGame() {
 
       // Always use snapped pixel position for direction calculation
       const snappedPos = snapToGrid(position);
+      const targetPixel = {
+        x: gridToPixel(targetTile.x),
+        y: gridToPixel(targetTile.y),
+      };
 
-      const newDir = getBestDirection(
-        snappedPos,
-        { x: gridToPixel(targetTile.x), y: gridToPixel(targetTile.y) },
-        direction
-      );
+      let newDir: Direction;
+
+      // Use A* pathfinding in Asian mode for perfect chasing
+      if (state.difficulty === "asian" && mode === "chase") {
+        newDir = getAStarDirection(snappedPos, targetPixel, direction);
+      } else {
+        // Use simple distance-based direction for other modes
+        newDir = getBestDirection(snappedPos, targetPixel, direction);
+      }
 
       // Always update direction when we have a valid new direction
       if (canMove(snappedPos, newDir)) {
@@ -290,12 +332,19 @@ export function usePacmanGame() {
       }
     }
 
-    const speed =
+    // Calculate speed based on mode and difficulty
+    let baseSpeed =
       mode === "frightened"
         ? GHOST_FRIGHTENED_SPEED
         : mode === "eaten"
           ? GHOST_EATEN_SPEED
           : GHOST_NORMAL_SPEED;
+
+    // Apply difficulty multiplier (except when eaten - they should always return fast)
+    const difficultyMultiplier =
+      mode !== "eaten" ? DIFFICULTY_SPEED_MULTIPLIERS[state.difficulty] : 1;
+
+    const speed = baseSpeed * difficultyMultiplier;
 
     if (canMove(position, direction)) {
       const vector = getDirectionVector(direction);
@@ -315,6 +364,7 @@ export function usePacmanGame() {
       direction,
       mode,
       targetTile,
+      modeTimer: ghost.modeTimer,
     };
   }
 
@@ -325,11 +375,19 @@ export function usePacmanGame() {
   ): Position {
     const pacmanGrid = getGridPosition(pacman.position);
 
+    // In Asian mode, ALL ghosts directly target Pacman's exact position
+    if (state.difficulty === "asian") {
+      return pacmanGrid;
+    }
+
+    // Normal mode - each ghost has unique targeting behavior
     switch (ghostId) {
       case "red":
+        // Blinky (Red) - Direct pursuit
         return pacmanGrid;
 
       case "pink": {
+        // Pinky (Pink) - Targets 4 tiles ahead of Pacman
         const vector = getDirectionVector(pacman.direction);
         return {
           x: pacmanGrid.x + vector.x * 4,
@@ -338,6 +396,7 @@ export function usePacmanGame() {
       }
 
       case "cyan": {
+        // Inky (Cyan) - Complex targeting based on Red ghost
         const redGhost = state.ghosts.find((g) => g.id === "red");
         if (!redGhost) return pacmanGrid;
 
@@ -355,6 +414,7 @@ export function usePacmanGame() {
       }
 
       case "orange": {
+        // Clyde (Orange) - Chases when far, scatters when close
         const distance = getDistance(
           state.ghosts.find((g) => g.id === "orange")?.position || {
             x: 0,
@@ -418,7 +478,14 @@ export function usePacmanGame() {
       ctx.shadowOffsetY = 2;
 
       // Ghost body with gradient
-      const gradient = ctx.createRadialGradient(x - radius / 3, y - radius / 2, 0, x, y, radius);
+      const gradient = ctx.createRadialGradient(
+        x - radius / 3,
+        y - radius / 2,
+        0,
+        x,
+        y,
+        radius
+      );
       gradient.addColorStop(0, glowColor);
       gradient.addColorStop(0.6, color);
       gradient.addColorStop(1, color);
@@ -429,14 +496,19 @@ export function usePacmanGame() {
 
       // Wavy bottom - smoother animation
       const waveCount = 4;
-      const waveWidth = (size) / waveCount;
+      const waveWidth = size / waveCount;
       const waveAnim = Math.sin(animationFrame * 0.15) * 1.5;
 
       for (let i = 0; i < waveCount; i++) {
         const waveX = x - radius + (i + 0.5) * waveWidth;
         const waveY = y + radius / 2.5 + (i % 2 === 0 ? waveAnim : -waveAnim);
         ctx.lineTo(x - radius + i * waveWidth, y + radius / 4);
-        ctx.quadraticCurveTo(waveX, waveY, x - radius + (i + 1) * waveWidth, y + radius / 4);
+        ctx.quadraticCurveTo(
+          waveX,
+          waveY,
+          x - radius + (i + 1) * waveWidth,
+          y + radius / 4
+        );
       }
 
       ctx.closePath();
@@ -456,18 +528,57 @@ export function usePacmanGame() {
       // Eye shadow
       ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
       ctx.beginPath();
-      ctx.ellipse(x - eyeSpacing, eyeY + 1, eyeSize + 1, eyeSize * 1.3 + 1, 0, 0, Math.PI * 2);
-      ctx.ellipse(x + eyeSpacing, eyeY + 1, eyeSize + 1, eyeSize * 1.3 + 1, 0, 0, Math.PI * 2);
+      ctx.ellipse(
+        x - eyeSpacing,
+        eyeY + 1,
+        eyeSize + 1,
+        eyeSize * 1.3 + 1,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.ellipse(
+        x + eyeSpacing,
+        eyeY + 1,
+        eyeSize + 1,
+        eyeSize * 1.3 + 1,
+        0,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
 
       // White eye background with subtle gradient
-      const eyeGradient = ctx.createRadialGradient(x - eyeSpacing, eyeY - 1, 0, x - eyeSpacing, eyeY, eyeSize);
+      const eyeGradient = ctx.createRadialGradient(
+        x - eyeSpacing,
+        eyeY - 1,
+        0,
+        x - eyeSpacing,
+        eyeY,
+        eyeSize
+      );
       eyeGradient.addColorStop(0, "#FFFFFF");
       eyeGradient.addColorStop(1, "#F0F0F0");
       ctx.fillStyle = eyeGradient;
       ctx.beginPath();
-      ctx.ellipse(x - eyeSpacing, eyeY, eyeSize, eyeSize * 1.3, 0, 0, Math.PI * 2);
-      ctx.ellipse(x + eyeSpacing, eyeY, eyeSize, eyeSize * 1.3, 0, 0, Math.PI * 2);
+      ctx.ellipse(
+        x - eyeSpacing,
+        eyeY,
+        eyeSize,
+        eyeSize * 1.3,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.ellipse(
+        x + eyeSpacing,
+        eyeY,
+        eyeSize,
+        eyeSize * 1.3,
+        0,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
 
       // Pupils - follow direction with better positioning
@@ -510,15 +621,39 @@ export function usePacmanGame() {
 
       ctx.fillStyle = pupilGradient;
       ctx.beginPath();
-      ctx.arc(x - eyeSpacing + pupilOffsetX, eyeY + pupilOffsetY, pupilSize, 0, Math.PI * 2);
-      ctx.arc(x + eyeSpacing + pupilOffsetX, eyeY + pupilOffsetY, pupilSize, 0, Math.PI * 2);
+      ctx.arc(
+        x - eyeSpacing + pupilOffsetX,
+        eyeY + pupilOffsetY,
+        pupilSize,
+        0,
+        Math.PI * 2
+      );
+      ctx.arc(
+        x + eyeSpacing + pupilOffsetX,
+        eyeY + pupilOffsetY,
+        pupilSize,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
 
       // Eye highlights
       ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
       ctx.beginPath();
-      ctx.arc(x - eyeSpacing + pupilOffsetX - pupilSize / 3, eyeY + pupilOffsetY - pupilSize / 3, pupilSize / 3, 0, Math.PI * 2);
-      ctx.arc(x + eyeSpacing + pupilOffsetX - pupilSize / 3, eyeY + pupilOffsetY - pupilSize / 3, pupilSize / 3, 0, Math.PI * 2);
+      ctx.arc(
+        x - eyeSpacing + pupilOffsetX - pupilSize / 3,
+        eyeY + pupilOffsetY - pupilSize / 3,
+        pupilSize / 3,
+        0,
+        Math.PI * 2
+      );
+      ctx.arc(
+        x + eyeSpacing + pupilOffsetX - pupilSize / 3,
+        eyeY + pupilOffsetY - pupilSize / 3,
+        pupilSize / 3,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     } else {
       // Eaten ghost - floating eyes
@@ -573,7 +708,7 @@ export function usePacmanGame() {
 
       ghosts = ghosts.map((ghost) =>
         ghost.mode !== "eaten"
-          ? { ...ghost, mode: "frightened" as const }
+          ? { ...ghost, mode: "frightened" as const, modeTimer: 0 }
           : ghost
       );
     }
@@ -585,7 +720,7 @@ export function usePacmanGame() {
           score += GHOST_POINTS[Math.min(ghostsEaten, 3)];
           ghostsEaten++;
           ghosts = [...ghosts];
-          ghosts[i] = { ...ghost, mode: "eaten" };
+          ghosts[i] = { ...ghost, mode: "eaten", modeTimer: 0 };
         } else if (ghost.mode !== "eaten") {
           lives--;
           if (lives <= 0) {
@@ -617,7 +752,8 @@ export function usePacmanGame() {
                 x: gridToPixel(startPositions[idx].x),
                 y: gridToPixel(startPositions[idx].y),
               },
-              mode: "scatter" as const,
+              mode: state.globalMode,
+              modeTimer: 0,
             };
           });
         }
@@ -659,6 +795,7 @@ export function usePacmanGame() {
 
     newState = checkCollisions(newState);
 
+    // Update power mode timer
     if (newState.powerMode) {
       let { powerModeTimer } = newState;
       powerModeTimer--;
@@ -674,6 +811,28 @@ export function usePacmanGame() {
           powerModeTimer,
         };
       }
+    }
+
+    // Update global mode timer (scatter/chase cycle) - skip in Asian mode
+    if (newState.difficulty !== "asian") {
+      let { globalModeTimer, globalMode } = newState;
+      globalModeTimer--;
+
+      if (globalModeTimer <= 0) {
+        if (globalMode === "scatter") {
+          globalMode = "chase";
+          globalModeTimer = CHASE_DURATION;
+        } else {
+          globalMode = "scatter";
+          globalModeTimer = SCATTER_DURATION;
+        }
+      }
+
+      newState = {
+        ...newState,
+        globalModeTimer,
+        globalMode,
+      };
     }
 
     newState = {
@@ -700,9 +859,11 @@ export function usePacmanGame() {
 
           // Check adjacent cells for rounded corner logic
           const hasTop = y > 0 && MAZE_LAYOUT[y - 1][x] === 1;
-          const hasBottom = y < MAZE_LAYOUT.length - 1 && MAZE_LAYOUT[y + 1][x] === 1;
+          const hasBottom =
+            y < MAZE_LAYOUT.length - 1 && MAZE_LAYOUT[y + 1][x] === 1;
           const hasLeft = x > 0 && MAZE_LAYOUT[y][x - 1] === 1;
-          const hasRight = x < MAZE_LAYOUT[y].length - 1 && MAZE_LAYOUT[y][x + 1] === 1;
+          const hasRight =
+            x < MAZE_LAYOUT[y].length - 1 && MAZE_LAYOUT[y][x + 1] === 1;
 
           ctx.beginPath();
 
@@ -714,21 +875,39 @@ export function usePacmanGame() {
 
           if (!hasTop && !hasRight) {
             ctx.lineTo(wallX + CELL_SIZE - cornerRadius, wallY);
-            ctx.arcTo(wallX + CELL_SIZE, wallY, wallX + CELL_SIZE, wallY + cornerRadius, cornerRadius);
+            ctx.arcTo(
+              wallX + CELL_SIZE,
+              wallY,
+              wallX + CELL_SIZE,
+              wallY + cornerRadius,
+              cornerRadius
+            );
           } else {
             ctx.lineTo(wallX + CELL_SIZE, wallY);
           }
 
           if (!hasBottom && !hasRight) {
             ctx.lineTo(wallX + CELL_SIZE, wallY + CELL_SIZE - cornerRadius);
-            ctx.arcTo(wallX + CELL_SIZE, wallY + CELL_SIZE, wallX + CELL_SIZE - cornerRadius, wallY + CELL_SIZE, cornerRadius);
+            ctx.arcTo(
+              wallX + CELL_SIZE,
+              wallY + CELL_SIZE,
+              wallX + CELL_SIZE - cornerRadius,
+              wallY + CELL_SIZE,
+              cornerRadius
+            );
           } else {
             ctx.lineTo(wallX + CELL_SIZE, wallY + CELL_SIZE);
           }
 
           if (!hasBottom && !hasLeft) {
             ctx.lineTo(wallX + cornerRadius, wallY + CELL_SIZE);
-            ctx.arcTo(wallX, wallY + CELL_SIZE, wallX, wallY + CELL_SIZE - cornerRadius, cornerRadius);
+            ctx.arcTo(
+              wallX,
+              wallY + CELL_SIZE,
+              wallX,
+              wallY + CELL_SIZE - cornerRadius,
+              cornerRadius
+            );
           } else {
             ctx.lineTo(wallX, wallY + CELL_SIZE);
           }
@@ -889,5 +1068,6 @@ export function usePacmanGame() {
     startGame,
     pauseGame,
     resetGame,
+    setDifficulty,
   };
 }

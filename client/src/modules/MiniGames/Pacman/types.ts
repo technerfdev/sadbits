@@ -7,6 +7,10 @@ export type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
 
 export type GameStatus = "menu" | "playing" | "paused" | "gameOver" | "won";
 
+export type Difficulty = "easy" | "normal" | "hard" | "asian";
+
+export type MazeSize = "small" | "normal" | "large";
+
 export type GhostColor = "red" | "pink" | "cyan" | "orange";
 
 export type GhostMode = "chase" | "scatter" | "frightened" | "eaten";
@@ -18,6 +22,7 @@ export interface Ghost {
   mode: GhostMode;
   targetTile: Position;
   scatterTarget: Position;
+  modeTimer: number;
 }
 
 export interface PacmanState {
@@ -33,6 +38,8 @@ export interface GameState {
   lives: number;
   level: number;
   gameStatus: GameStatus;
+  difficulty: Difficulty;
+  mazeSize: MazeSize;
   pacman: PacmanState;
   ghosts: Ghost[];
   dots: Set<string>;
@@ -41,6 +48,8 @@ export interface GameState {
   powerModeTimer: number;
   ghostsEaten: number;
   animationFrame: number;
+  globalModeTimer: number;
+  globalMode: "chase" | "scatter";
 }
 
 export type CellType = 0 | 1 | 2 | 3 | 4;

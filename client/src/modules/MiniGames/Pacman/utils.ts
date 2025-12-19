@@ -160,3 +160,137 @@ export function getBestDirection(
 
   return bestDirection;
 }
+
+// Manhattan distance for A* heuristic
+function manhattanDistance(pos1: Position, pos2: Position): number {
+  return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+}
+
+// A* pathfinding algorithm for Asian mode
+export function getAStarDirection(
+  from: Position,
+  to: Position,
+  currentDirection: Direction
+): Direction {
+  const startGrid = getGridPosition(from);
+  const endGrid = getGridPosition(to);
+
+  // If we're already at the target, return current direction
+  if (startGrid.x === endGrid.x && startGrid.y === endGrid.y) {
+    return currentDirection;
+  }
+
+  interface Node {
+    x: number;
+    y: number;
+    g: number; // Cost from start
+    h: number; // Heuristic to end
+    f: number; // Total cost
+    parent: Node | null;
+  }
+
+  const openSet: Node[] = [];
+  const closedSet = new Set<string>();
+
+  const startNode: Node = {
+    x: startGrid.x,
+    y: startGrid.y,
+    g: 0,
+    h: manhattanDistance(startGrid, endGrid),
+    f: 0,
+    parent: null,
+  };
+  startNode.f = startNode.g + startNode.h;
+  openSet.push(startNode);
+
+  const nodeKey = (x: number, y: number) => `${x},${y}`;
+
+  // Limit iterations to prevent infinite loops
+  let iterations = 0;
+  const maxIterations = 200;
+
+  while (openSet.length > 0 && iterations < maxIterations) {
+    iterations++;
+
+    // Find node with lowest f score
+    openSet.sort((a, b) => a.f - b.f);
+    const current = openSet.shift()!;
+
+    // Found the target
+    if (current.x === endGrid.x && current.y === endGrid.y) {
+      // Trace back to find first step
+      let path = current;
+      while (path.parent && path.parent.parent !== null) {
+        path = path.parent;
+      }
+
+      // Determine direction from start to first step
+      const dx = path.x - startGrid.x;
+      const dy = path.y - startGrid.y;
+
+      if (dx > 0) return "RIGHT";
+      if (dx < 0) return "LEFT";
+      if (dy > 0) return "DOWN";
+      if (dy < 0) return "UP";
+
+      return currentDirection;
+    }
+
+    closedSet.add(nodeKey(current.x, current.y));
+
+    // Check all neighbors
+    const directions = [
+      { x: 0, y: -1, dir: "UP" as Direction },
+      { x: 0, y: 1, dir: "DOWN" as Direction },
+      { x: -1, y: 0, dir: "LEFT" as Direction },
+      { x: 1, y: 0, dir: "RIGHT" as Direction },
+    ];
+
+    for (const { x: dx, y: dy, dir } of directions) {
+      const neighborX = current.x + dx;
+      const neighborY = current.y + dy;
+
+      // Skip if wall or out of bounds
+      if (isWall(neighborX, neighborY)) continue;
+
+      const key = nodeKey(neighborX, neighborY);
+      if (closedSet.has(key)) continue;
+
+      // Don't allow turning back on first move (except if forced)
+      const opposite = getOppositeDirection(currentDirection);
+      if (current.parent === null && dir === opposite) {
+        const fromPos = { x: gridToPixel(startGrid.x), y: gridToPixel(startGrid.y) };
+        const validDirs = getValidDirections(fromPos);
+        if (validDirs.length > 1) continue;
+      }
+
+      const g = current.g + 1;
+      const h = manhattanDistance({ x: neighborX, y: neighborY }, endGrid);
+      const f = g + h;
+
+      // Check if this neighbor is already in openSet
+      const existingNode = openSet.find((n) => n.x === neighborX && n.y === neighborY);
+
+      if (existingNode) {
+        // Update if we found a better path
+        if (g < existingNode.g) {
+          existingNode.g = g;
+          existingNode.f = f;
+          existingNode.parent = current;
+        }
+      } else {
+        openSet.push({
+          x: neighborX,
+          y: neighborY,
+          g,
+          h,
+          f,
+          parent: current,
+        });
+      }
+    }
+  }
+
+  // If A* fails, fall back to simple distance-based direction
+  return getBestDirection(from, to, currentDirection);
+}
