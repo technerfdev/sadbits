@@ -4,6 +4,29 @@
 
 directive @upper on FIELD_DEFINITION
 
+type Analytics {
+  timeseries: [AnalyticsTimeseries!]!
+  totals: AnalyticsTotals!
+}
+
+type AnalyticsTimeseries {
+  bandwidth: Int!
+  pageViews: Int!
+  requests: Int!
+  threats: Int!
+  timestamp: String!
+  uniques: Int!
+}
+
+type AnalyticsTotals {
+  bandwidth: Int!
+  cachedRequests: Float!
+  pageViews: Int!
+  requests: Int!
+  threats: Int!
+  uniques: Int!
+}
+
 input CreateProjectInput {
   description: String
   name: String!
@@ -61,6 +84,7 @@ type Project {
 }
 
 type Query {
+  cloudflareAnalytics(since: String, until: String): Analytics!
   projects: [Project!]!
   task(id: ID!): Task!
   tasks(filterBy: FilterBy = {archived: false, completed: false}): [Task!]!

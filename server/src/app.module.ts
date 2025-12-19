@@ -12,7 +12,6 @@ import { TaskModule } from './task/task.module';
 import { ProjectsService } from './projects/projects.service';
 import { ProjectsResolver } from './projects/projects.resolver';
 import { ProjectsModule } from './projects/projects.module';
-import { CloudflareResolver } from './cloudflare/cloudflare.resolver';
 import { CloudflareModule } from './cloudflare/cloudflare.module';
 
 @Module({
@@ -61,7 +60,6 @@ import { CloudflareModule } from './cloudflare/cloudflare.module';
     ConfigService,
     ProjectsService,
     ProjectsResolver,
-    CloudflareResolver,
   ],
 })
 export class AppModule {}
