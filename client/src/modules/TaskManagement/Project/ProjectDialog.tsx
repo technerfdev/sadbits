@@ -49,7 +49,7 @@ export default function ProjectDialog({
   const [createProject] = useMutation<
     CreateProjectMutation,
     CreateProjectMutationVariables
-  >(gql(CreateProjectDocument.toString()), {optimisticResponse:});
+  >(gql(CreateProjectDocument.toString()));
 
   const form = useForm<ProjectType>({
     resolver: createProjectResolver,
@@ -125,7 +125,7 @@ export default function ProjectDialog({
                   Discard
                 </Button>
               </DialogClose>
-              <Button type="submit"> 
+              <Button type="submit">
                 <Typography>Submit</Typography>
               </Button>
             </DialogFooter>

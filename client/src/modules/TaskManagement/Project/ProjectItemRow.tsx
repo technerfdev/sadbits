@@ -33,19 +33,23 @@ export default function ProjectItemRow({
 }: ProjectItemRowProps) {
   const [mode, setMode] = useState<"renaming" | "duplicating" | null>(null);
   const [tempName, setTempName] = useState<string>(project.name);
-  const [createProject] = useMutation<
-    CreateProjectMutation,
-    CreateProjectMutationVariables
-  >(gql(CreateProjectDocument.toString()));
 
   const [updateProject] = useMutation<
     UpdateProjectMutation,
     UpdateProjectMutationVariables
   >(gql(UpdateProjectDocument.toString()), {
+    optimisticResponse: (variables) => ({
+      updateProject: {
+        __typename: "Project",
+        name: tempName,
+        id: variables.project.id,
+        description: variables.project.description,
+      },
+    }),
     update: (cache, { data }) => {
       if (!data?.updateProject.id) return;
       cache.modify({
-        id: cache.identify({ id: project.id }),
+        id: cache.identify(data.updateProject),
         fields: {
           name() {
             return tempName;
@@ -115,7 +119,10 @@ export default function ProjectItemRow({
           </div>
         ) : (
           <div className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors cursor-pointer border border-transparent hover:border-border/40">
-            <button onClick={onClick} className="flex items-center gap-2 w-full text-left">
+            <button
+              onClick={onClick}
+              className="flex items-center gap-2 w-full text-left"
+            >
               {renderIcon()}
               <span>{project.name}</span>
             </button>
