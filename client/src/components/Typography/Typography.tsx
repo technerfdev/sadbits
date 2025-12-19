@@ -15,8 +15,10 @@ export type LevelType =
 export default function Typography({
   level: Element = "p",
   children,
+  ...props
 }: PropsWithChildren<{
   level?: LevelType;
+  className?: string;
 }>): JSX.Element {
-  return <Element>{children}</Element>;
+  return <Element {...props}>{children}</Element>;
 }

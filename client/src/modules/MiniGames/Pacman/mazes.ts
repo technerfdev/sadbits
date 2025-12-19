@@ -1,67 +1,26 @@
-import type { GhostColor, Position } from "./types";
+export const TRADITIONAL_MAZE_LAYOUT = [
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 3, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 3, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+  [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 0, 1, 1, 1, 4, 1, 4, 1, 1, 1, 0, 1, 1, 1, 1],
+  [4, 4, 4, 1, 0, 1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 1, 4, 4, 4],
+  [1, 1, 1, 1, 0, 1, 4, 1, 2, 2, 2, 1, 4, 1, 0, 1, 1, 1, 1],
+  [4, 4, 4, 4, 0, 4, 4, 1, 2, 2, 2, 1, 4, 4, 0, 4, 4, 4, 4], // Ghost House Row
+  [1, 1, 1, 1, 0, 1, 4, 1, 1, 1, 1, 1, 4, 1, 0, 1, 1, 1, 1],
+  [4, 4, 4, 1, 0, 1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 1, 4, 4, 4],
+  [1, 1, 1, 1, 0, 1, 4, 1, 1, 1, 1, 1, 4, 1, 0, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+  [1, 3, 0, 1, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 0, 3, 1],
+  [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1],
+  [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
 
-export const CELL_SIZE = 16;
-export const GRID_WIDTH = 44;
-export const GRID_HEIGHT = 48;
-export const CANVAS_WIDTH = GRID_WIDTH * CELL_SIZE;
-export const CANVAS_HEIGHT = GRID_HEIGHT * CELL_SIZE;
-
-export const PACMAN_SPEED = 2;
-export const GHOST_NORMAL_SPEED = 1.7;
-export const GHOST_FRIGHTENED_SPEED = 1.2;
-export const GHOST_EATEN_SPEED = 3;
-
-// Difficulty multipliers for ghost speed
-export const DIFFICULTY_SPEED_MULTIPLIERS = {
-  easy: 0.7,
-  normal: 1.0,
-  hard: 1.3,
-  asian: 1.6,
-};
-
-// Mode timings (in frames, 60fps)
-export const SCATTER_DURATION = 420; // 7 seconds
-export const CHASE_DURATION = 1200; // 20 seconds
-
-export const DOT_POINTS = 10;
-export const POWER_PELLET_POINTS = 50;
-export const GHOST_POINTS = [200, 400, 800, 1600];
-
-export const POWER_MODE_DURATION = 360;
-export const INITIAL_LIVES = 3;
-
-export const GHOST_SCATTER_TARGETS: Record<GhostColor, Position> = {
-  red: { x: 40, y: 2 },
-  pink: { x: 2, y: 2 },
-  cyan: { x: 40, y: 45 },
-  orange: { x: 2, y: 45 },
-};
-
-export const COLORS = {
-  wall: "#2121DE",
-  wallGlow: "#5252FF",
-  background: "#000000",
-  dot: "#FFB897",
-  powerPellet: "#FFB897",
-  pacman: "#FFFF00",
-  pacmanGlow: "#FFD700",
-  ghostRed: "#FF0000",
-  ghostRedGlow: "#FF3333",
-  ghostPink: "#FFB8FF",
-  ghostPinkGlow: "#FFDDFF",
-  ghostCyan: "#00FFFF",
-  ghostCyanGlow: "#66FFFF",
-  ghostOrange: "#FFB852",
-  ghostOrangeGlow: "#FFCC77",
-  ghostFrightened: "#2121DE",
-  ghostFrightenedGlow: "#5252FF",
-  ghostEyes: "#FFFFFF",
-  text: "#FFFFFF",
-  grid: "#000000",
-};
-
-/** @deprecated  */
-export const MAZE_LAYOUT = [
+export const LARGE_MAZE_LAYOUT = [
   [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

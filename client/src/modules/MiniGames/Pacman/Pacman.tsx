@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  PauseIcon,
-  PlayCircleIcon,
-  PlayIcon,
-  RotateCcwIcon,
-} from "lucide-react";
+import { PauseIcon, PlayIcon, RotateCcwIcon } from "lucide-react";
 import type { JSX } from "react/jsx-runtime";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./constants";
 import { usePacmanGame } from "./usePacmanGame";
@@ -138,6 +133,10 @@ export default function Pacman(): JSX.Element {
                     💀 ASIAN MODE
                   </button>
                 </div>
+              </div>
+
+              <div>
+                <h3>Select map</h3>
               </div>
 
               <button
