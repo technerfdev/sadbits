@@ -67,9 +67,14 @@ export default function CloudflareAnalytics(): JSX.Element {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
+          <a
+            className="text-2xl font-bold tracking-tight hover:underline cursor-pointer"
+            href="https://albertnguyen.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             albertnguyen.com
-          </h2>
+          </a>
           <p className="text-sm text-muted-foreground">Last 24 hours</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">

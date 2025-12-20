@@ -1,10 +1,8 @@
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   UpdateTaskDocument,
@@ -13,24 +11,39 @@ import {
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
-import { PencilIcon } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
-import TaskForm, { TaskResolver, TaskSchema } from "./TaskForm";
 import type { Task } from "../TaskManagement.interfaces";
+import TaskForm, { TaskResolver, TaskSchema } from "./TaskForm";
 
 interface EditTaskDialogProps {
   task: Task;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function EditTaskDialog({ task }: EditTaskDialogProps) {
-  const [open, setOpen] = useState<boolean>(false);
+export default function EditTaskDialog({
+  task,
+  open,
+  onOpenChange,
+}: EditTaskDialogProps) {
   const [updateTask, { loading }] = useMutation<
     UpdateTaskMutation,
     UpdateTaskMutationVariables
-  >(gql(UpdateTaskDocument.toString()));
+  >(gql(UpdateTaskDocument.toString()), {
+    update: (cache, { data: mutationData }) => {
+      cache.modify({
+        id: cache.identify({ __typename: "Task", id: task.id }),
+        fields: {
+          title: () => mutationData?.updateTask.title,
+          description: () => mutationData?.updateTask.description,
+          priority: () => mutationData?.updateTask.priority,
+          dueDate: () => mutationData?.updateTask.dueDate,
+        },
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof TaskSchema>>({
     resolver: TaskResolver,
@@ -39,13 +52,7 @@ export default function EditTaskDialog({ task }: EditTaskDialogProps) {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="icon-sm" variant="ghost">
-          <PencilIcon />
-          Edit
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit</DialogTitle>
@@ -54,7 +61,7 @@ export default function EditTaskDialog({ task }: EditTaskDialogProps) {
           form={form}
           loading={loading}
           task={task}
-          onDiscard={() => setOpen(false)}
+          onDiscard={() => onOpenChange(false)}
           onSubmit={async (values) => {
             try {
               await updateTask({
@@ -64,7 +71,7 @@ export default function EditTaskDialog({ task }: EditTaskDialogProps) {
                   },
                 },
               });
-              setOpen(false);
+              onOpenChange(false);
               form.reset();
             } catch (e) {
               toast.error(e?.message);
