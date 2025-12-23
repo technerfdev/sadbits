@@ -56,6 +56,10 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
     },
   });
 
+  const isOverdue = task.dueDate
+    ? new Date(task.dueDate) < new Date() && !task.completed
+    : false;
+
   return (
     <>
       <ContextMenu>
@@ -100,6 +104,12 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                       <PriorityFlag priority={task.priority} />
                       {task.priority}
                     </span>
+                  </>
+                )}
+                {isOverdue && (
+                  <>
+                    <span>•</span>
+                    <span className="text-red-500">Overdue</span>
                   </>
                 )}
               </div>

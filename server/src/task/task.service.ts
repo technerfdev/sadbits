@@ -28,6 +28,7 @@ export class TaskService {
       data: {
         id: uuidv4(),
         ...data,
+        createdAt: new UTCDate(),
       },
     });
   }
