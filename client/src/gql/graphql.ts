@@ -57,6 +57,7 @@ export type CreateTaskInputDto = {
   description?: InputMaybe<Scalars['String']['input']>;
   dueDate?: InputMaybe<Scalars['String']['input']>;
   priority?: InputMaybe<PriorityType>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
   updatedAt?: InputMaybe<Scalars['String']['input']>;
   updatedBy?: InputMaybe<Scalars['String']['input']>;
@@ -181,6 +182,7 @@ export type UpdateTaskInput = {
   dueDate?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['String']['input'];
   priority?: InputMaybe<PriorityType>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['String']['input']>;
   updatedBy?: InputMaybe<Scalars['String']['input']>;

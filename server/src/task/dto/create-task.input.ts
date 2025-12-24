@@ -82,4 +82,9 @@ export class CreateTaskInputDto {
   @IsArray()
   @IsUUID('4', { each: true, message: 'Each assigned user must be valid UUID' })
   assignedTo?: string[];
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsUUID('4')
+  projectId?: string;
 }

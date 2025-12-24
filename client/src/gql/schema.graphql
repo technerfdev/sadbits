@@ -41,6 +41,7 @@ input CreateTaskInputDto {
   description: String
   dueDate: String
   priority: PriorityType
+  projectId: String
   title: String!
   updatedAt: String
   updatedBy: String
@@ -119,6 +120,7 @@ input UpdateTaskInput {
   dueDate: String
   id: String!
   priority: PriorityType
+  projectId: String
   title: String
   updatedAt: String
   updatedBy: String

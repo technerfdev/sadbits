@@ -19,6 +19,9 @@
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
-    "strictBindCallApply": true
+    "strictBindCallApply": true,
+    "paths": {
+      "@prisma/*": ["./src/prisma/*"]
+    }
   }
 }

@@ -2,23 +2,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   ContextMenu,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
   DeleteTaskDocument,
+  GetProjectsDocument,
   PriorityType,
   UpdateTaskDocument,
+  type GetProjectsQuery,
   type UpdateTaskMutation,
   type UpdateTaskMutationVariables,
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { Flag } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import EditTaskDialog from "./Task/EditTaskDialog";
 import type { Task } from "./TaskManagement.interfaces";
+import { ContextMenuSub } from "@radix-ui/react-context-menu";
+import { Separator } from "@/components/ui/separator";
 
 function PriorityFlag({ priority }: { priority: PriorityType }) {
   switch (priority) {
@@ -55,6 +62,10 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
       });
     },
   });
+
+  const { data: projectsData } = useQuery<GetProjectsQuery>(
+    gql(GetProjectsDocument.toString())
+  );
 
   const isOverdue = task.dueDate
     ? new Date(task.dueDate) < new Date() && !task.completed
@@ -118,12 +129,14 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
         </ContextMenuTrigger>
         <ContextMenuContent className="min-w-40 rounded-lg border border-border/50 bg-popover p-1 shadow-lg">
           <ContextMenuItem
+            inset
             className="px-2 py-1.5 rounded-md cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none"
             onClick={() => setEditing(true)}
           >
             Edit
           </ContextMenuItem>
           <ContextMenuItem
+            inset
             className="px-2 py-1.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive transition-colors outline-none"
             onClick={async () => {
               const res = await deleteTask({ variables: { id: task.id } });
@@ -137,6 +150,41 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
           >
             Delete
           </ContextMenuItem>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger inset>Move</ContextMenuSubTrigger>
+            <ContextMenuContent className="min-w-40 rounded-lg border border-border/50 bg-popover p-1 shadow-lg">
+              <ContextMenuGroup>
+                <ContextMenuLabel>Projects</ContextMenuLabel>
+                <Separator />
+                {/* TODO: List of projects here */}
+                {projectsData?.projects.map((project) => (
+                  <ContextMenuItem
+                    key={project.id}
+                    className="px-2 py-1.5 rounded-md cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none"
+                    onClick={async () => {
+                      const res = await updateTask({
+                        variables: {
+                          task: {
+                            id: task.id,
+                            projectId: project.id,
+                          },
+                        },
+                      });
+
+                      if (!res.data) {
+                        toast.error("Failed to move task");
+                        return;
+                      }
+
+                      toast.success(`Moved to ${project.name}`);
+                    }}
+                  >
+                    {project.name}
+                  </ContextMenuItem>
+                ))}
+              </ContextMenuGroup>
+            </ContextMenuContent>
+          </ContextMenuSub>
         </ContextMenuContent>
       </ContextMenu>
       <EditTaskDialog task={task} open={editing} onOpenChange={setEditing} />

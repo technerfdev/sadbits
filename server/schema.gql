@@ -40,6 +40,7 @@ input CreateTaskInputDto {
   description: String
   dueDate: String
   priority: PriorityType
+  projectId: String
   title: String!
   updatedAt: String
   updatedBy: String
@@ -92,15 +93,19 @@ type Query {
 
 type Task {
   archived: Boolean
+  assignedTo: [String!]
   author: String
   completed: Boolean!
   createdAt: DateTime
+  createdBy: String
   description: String
   dueDate: DateTime
   id: ID!
   priority: PriorityType
+  projectId: String
   title: String!
   updatedAt: DateTime
+  updatedBy: String
 }
 
 input UpdateProjectInput {
@@ -118,6 +123,7 @@ input UpdateTaskInput {
   dueDate: String
   id: String!
   priority: PriorityType
+  projectId: String
   title: String
   updatedAt: String
   updatedBy: String
