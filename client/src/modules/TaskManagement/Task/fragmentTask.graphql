@@ -6,4 +6,8 @@ fragment TaskFragment on Task {
   completed
   dueDate
   archived
+  projects {
+    id
+    name
+  }
 }

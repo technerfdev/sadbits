@@ -19,7 +19,7 @@ type Documents = {
     "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": typeof types.CreateProjectDocument,
     "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": typeof types.UpdateProjectDocument,
     "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": typeof types.GetProjectsDocument,
-    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}": typeof types.TaskFragmentFragmentDoc,
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n  projects {\n    id\n    name\n  }\n}": typeof types.TaskFragmentFragmentDoc,
     "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.CreateTaskDocument,
     "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": typeof types.DeleteTaskDocument,
     "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": typeof types.UpdateTaskDocument,
@@ -30,7 +30,7 @@ const documents: Documents = {
     "mutation CreateProject($project: CreateProjectInput!) {\n  createProject(project: $project) {\n    id\n    name\n    description\n  }\n}": types.CreateProjectDocument,
     "mutation UpdateProject($project: UpdateProjectInput!) {\n  updateProject(project: $project) {\n    id\n  }\n}": types.UpdateProjectDocument,
     "query GetProjects {\n  projects {\n    id\n    name\n    description\n  }\n}": types.GetProjectsDocument,
-    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}": types.TaskFragmentFragmentDoc,
+    "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n  projects {\n    id\n    name\n  }\n}": types.TaskFragmentFragmentDoc,
     "mutation CreateTask($task: CreateTaskInputDto!) {\n  createTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.CreateTaskDocument,
     "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id) {\n    success\n  }\n}": types.DeleteTaskDocument,
     "mutation UpdateTask($task: UpdateTaskInput!) {\n  updateTask(task: $task) {\n    ...TaskFragment\n  }\n}": types.UpdateTaskDocument,
@@ -56,7 +56,7 @@ export function graphql(source: "query GetProjects {\n  projects {\n    id\n    
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n}"): typeof import('./graphql').TaskFragmentFragmentDoc;
+export function graphql(source: "fragment TaskFragment on Task {\n  id\n  title\n  description\n  priority\n  completed\n  dueDate\n  archived\n  projects {\n    id\n    name\n  }\n}"): typeof import('./graphql').TaskFragmentFragmentDoc;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

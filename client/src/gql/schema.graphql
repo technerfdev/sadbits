@@ -85,6 +85,11 @@ type Project {
   name: String!
 }
 
+type ProjectSummary {
+  id: ID!
+  name: String!
+}
+
 type Query {
   cloudflareAnalytics(since: String, until: String): Analytics!
   projects: [Project!]!
@@ -94,15 +99,20 @@ type Query {
 
 type Task {
   archived: Boolean
+  assignedTo: [String!]
   author: String
   completed: Boolean!
   createdAt: DateTime
+  createdBy: String
   description: String
   dueDate: DateTime
   id: ID!
   priority: PriorityType
+  projectId: String
+  projects: ProjectSummary
   title: String!
   updatedAt: DateTime
+  updatedBy: String
 }
 
 input UpdateProjectInput {

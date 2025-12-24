@@ -157,11 +157,7 @@ export default function TaskForm({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Textarea
-                    placeholder="..."
-                    {...field}
-                    value={field.value ?? ""}
-                  />
+                  <Textarea placeholder="..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -1,5 +1,5 @@
 import { UTCDate } from '@date-fns/utc';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { FilterBy } from 'src/common/dto/filter-by.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaServices } from '../prisma/prisma.service';
@@ -33,19 +33,49 @@ export class TaskService {
     });
   }
 
-  task(id: string): Promise<Task | null> {
-    return this.prisma.tasks.findUnique({
+  async task(id: string): Promise<Task | null> {
+    const task = await this.prisma.tasks.findUnique({
       where: {
         id,
         archived: false,
       },
     });
+
+    if (!task) {
+      throw new NotFoundException({
+        message: 'Task not found',
+        error: 'TaskNotFound',
+      });
+    }
+
+    let project = null;
+    Logger.log({
+      projectId: task?.projectId,
+      task: task.id,
+    });
+    if (task?.projectId) {
+      project = await this.prisma.projects.findUnique({
+        where: { id: task?.projectId },
+      });
+    }
+    return {
+      ...task,
+      ...(project ? { project: { id: project.id, name: project.name } } : {}),
+    };
   }
 
-  async getAll(filterBy?: FilterBy): Promise<Task[] | null> {
-    return await this.prisma.tasks.findMany({
+  getAll(filterBy?: FilterBy): Promise<Task[] | null> {
+    return this.prisma.tasks.findMany({
       where: {
         ...filterBy,
+      },
+      include: {
+        projects: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
       },
       orderBy: [{ dueDate: 'desc' }, { createdAt: 'desc' }],
     });

@@ -8,6 +8,15 @@ export enum PriorityTypeTaskPriority {
 }
 
 @ObjectType()
+class ProjectSummary {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  name: string;
+}
+
+@ObjectType()
 export class Task implements Partial<Tasks> {
   @Field(() => ID)
   id: string;
@@ -49,5 +58,8 @@ export class Task implements Partial<Tasks> {
   projectId: string | null;
 
   @Field(() => Boolean, { nullable: true })
-  archived: boolean | null;
+  archived?: boolean | null;
+
+  @Field(() => ProjectSummary, { nullable: true })
+  projects?: ProjectSummary | null;
 }
