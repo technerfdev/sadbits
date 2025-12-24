@@ -19,13 +19,18 @@ import {
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Flag } from "lucide-react";
+import { Flag, FolderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import EditTaskDialog from "./Task/EditTaskDialog";
 import type { Task } from "./TaskManagement.interfaces";
 import { ContextMenuSub } from "@radix-ui/react-context-menu";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function PriorityFlag({ priority }: { priority: PriorityType }) {
   switch (priority) {
@@ -39,6 +44,7 @@ function PriorityFlag({ priority }: { priority: PriorityType }) {
 }
 
 export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
+  const [hovering, setHovering] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [deleteTask] = useMutation(gql(DeleteTaskDocument.toString()), {
     update: (cache) => {
@@ -58,6 +64,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
         id: cache.identify({ __typename: "Task", id: task.id }),
         fields: {
           completed: () => Boolean(mutationData?.updateTask.completed),
+          projects: () => mutationData?.updateTask.projects,
         },
       });
     },
@@ -74,7 +81,12 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger asChild>
+        <ContextMenuTrigger
+          asChild
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          data-testid="task-row-trigger"
+        >
           <div className="group flex items-start gap-3 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors border border-transparent hover:border-border/40">
             <Checkbox
               id={task.id}
@@ -113,7 +125,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <PriorityFlag priority={task.priority} />
-                      {task.priority}
+                      {task.priority.toUpperCase()}
                     </span>
                   </>
                 )}
@@ -123,7 +135,41 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                     <span className="text-red-500">Overdue</span>
                   </>
                 )}
+                {task.projects && (
+                  <>
+                    <span>•</span>
+                    <span className="flex gap-1 items-center justify-center">
+                      <FolderIcon className="w-4" />
+                      {task.projects.name}
+                    </span>
+                  </>
+                )}
               </div>
+            </div>
+
+            <div className="ml-auto justify-center items-center flex">
+              {hovering && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer"
+                      data-testid="start-pomodoro-icon"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.694a1.125 1.125 0 010 1.972l-11.54 6.694c-.75.412-1.667-.13-1.667-.986V5.653z"
+                      />
+                    </svg>
+                  </TooltipTrigger>
+                  <TooltipContent>Start session</TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
         </ContextMenuTrigger>
@@ -156,7 +202,6 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
               <ContextMenuGroup>
                 <ContextMenuLabel>Projects</ContextMenuLabel>
                 <Separator />
-                {/* TODO: List of projects here */}
                 {projectsData?.projects.map((project) => (
                   <ContextMenuItem
                     key={project.id}

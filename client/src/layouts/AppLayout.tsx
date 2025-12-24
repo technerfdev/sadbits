@@ -20,6 +20,8 @@ import {
   Tooltip,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import TimerDisplay from "@/modules/Pomodoro/TimerDisplay";
+import { usePomodoro } from "@/modules/Pomodoro/usePomodoro";
 import { ThemeToggle } from "@/modules/Theme/ThemeToggle";
 import {
   DropdownMenuItem,
@@ -76,6 +78,7 @@ const menu = [
 function AppLayoutContainer(): JSX.Element {
   const { open, toggleSidebar } = useSidebar();
   const { pathname } = useLocation();
+  const { state, timeLeft, onPause, onReset } = usePomodoro();
 
   return (
     <>
@@ -164,6 +167,13 @@ function AppLayoutContainer(): JSX.Element {
         <div className="absolute right-1 bottom-2">
           <ThemeToggle />
         </div>
+
+        <TimerDisplay
+          state="completed"
+          timeLeft={timeLeft}
+          onPause={onPause}
+          onReset={onReset}
+        />
       </div>
     </>
   );
