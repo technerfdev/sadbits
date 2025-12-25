@@ -7,34 +7,37 @@ import {
   StopCircle,
 } from "lucide-react";
 import { useEffect, useState, type JSX } from "react";
-import { type PomodoroState } from "./usePomodoro";
+import { usePomodoro, type PomodoroState } from "./usePomodoro";
 
-export default function TimerDisplay({
-  timeLeft,
-  state,
-  onPause,
-  onReset,
-  onResume,
-}: {
+export interface TimerDisplayProps {
   timeLeft: number;
   state: PomodoroState;
   onPause: () => void;
   onReset: () => void;
   onResume: () => void;
-}): JSX.Element {
+}
+
+export default function TimerDisplay(): JSX.Element {
+  const { timeLeft, state, onStart, onPause, onReset, onResume } =
+    usePomodoro();
+
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  const [popped, setPopped] = useState<boolean>(false);
   const [showConfirmStop, setShowConfirmStop] = useState<boolean>(false);
-
-  useEffect(() => {
-    setPopped(true);
-    const t = setTimeout(() => setPopped(false), 160);
-    return () => clearTimeout(t);
-  }, [timeLeft]);
 
   const RenderButtons = (): JSX.Element | null => {
     switch (state) {
+      case "completed":
+        return (
+          <Button
+            variant={"outline"}
+            size={"icon-lg"}
+            onClick={onStart}
+            aria-label="Reset"
+          >
+            <CirclePlayIcon />
+          </Button>
+        );
       case "running":
         return (
           <Button
@@ -88,6 +91,13 @@ export default function TimerDisplay({
     }
   };
 
+  useEffect(() => {
+    if (minutes === 0 && seconds === 0 && state === "running") {
+      // Timer completed
+      debugger;
+    }
+  }, [minutes, seconds]);
+
   return (
     <>
       <div className="absolute right-4 top-4 z-50">
@@ -100,11 +110,10 @@ export default function TimerDisplay({
             }`}
           >
             <div
-              className={`text-lg md:text-xl font-medium tracking-wide text-foreground transform-gpu transition-transform duration-150 ${
-                popped ? "scale-105" : "scale-100"
-              }`}
+              className={`text-lg md:text-xl font-medium tracking-wide text-foreground transform-gpu transition-transform duration-150  `}
             >
-              {minutes}:{seconds.toString().padStart(2, "0")}
+              {minutes.toString().padStart(2, "0")}:
+              {seconds.toString().padStart(2, "0")}
             </div>
             <div className="text-xs text-muted-foreground">Pomodoro</div>
           </div>
