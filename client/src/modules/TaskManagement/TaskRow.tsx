@@ -31,6 +31,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { usePomodoroContext } from "../Pomodoro/PomodoroContext";
+import { Button } from "@/components/ui/button";
 
 function PriorityFlag({ priority }: { priority: PriorityType }) {
   switch (priority) {
@@ -44,8 +52,10 @@ function PriorityFlag({ priority }: { priority: PriorityType }) {
 }
 
 export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
+  const { onStart: startPomodoro, state } = usePomodoroContext();
   const [hovering, setHovering] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
+  const [pendingSession, setPendingSession] = useState<number | null>(null);
   const [deleteTask] = useMutation(gql(DeleteTaskDocument.toString()), {
     update: (cache) => {
       cache.evict({
@@ -149,26 +159,49 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
 
             <div className="ml-auto justify-center items-center flex">
               {hovering && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer"
-                      data-testid="start-pomodoro-icon"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.694a1.125 1.125 0 010 1.972l-11.54 6.694c-.75.412-1.667-.13-1.667-.986V5.653z"
-                      />
-                    </svg>
-                  </TooltipTrigger>
-                  <TooltipContent>Start session</TooltipContent>
-                </Tooltip>
+                <Popover>
+                  <PopoverTrigger>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer"
+                          data-testid="start-pomodoro-icon"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.694a1.125 1.125 0 010 1.972l-11.54 6.694c-.75.412-1.667-.13-1.667-.986V5.653z"
+                          />
+                        </svg>
+                      </TooltipTrigger>
+                      <TooltipContent>Start session</TooltipContent>
+                    </Tooltip>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2">
+                    <div className="space-y-1.5">
+                      {Array.from([25, 30, 45, 60]).map((mins) => (
+                        <div
+                          key={mins}
+                          className="px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-accent transition-colors outline-none"
+                          onClick={() => {
+                            if (state !== "completed") {
+                              setPendingSession(mins);
+                            } else {
+                              startPomodoro(mins as any, task.id, task.title);
+                            }
+                          }}
+                        >
+                          {mins}m
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           </div>
@@ -232,6 +265,29 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
           </ContextMenuSub>
         </ContextMenuContent>
       </ContextMenu>
+      {pendingSession && (
+        <Dialog
+          open={!!pendingSession}
+          onOpenChange={() => setPendingSession(null)}
+        >
+          <DialogContent>
+            <p>A Pomodoro session is already running. Start a new one?</p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setPendingSession(null)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  startPomodoro(pendingSession as any, task.id, task.title);
+                  setPendingSession(null);
+                }}
+              >
+                Start New
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       <EditTaskDialog task={task} open={editing} onOpenChange={setEditing} />
     </>
   );

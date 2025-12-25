@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import CloudflareAnalytics from "../CloudflareStats/CloudflareStats";
 import Weather from "../Weather/Weather";
 import HomeCalendar from "./HomeCalendar";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 function Clock() {
   const [time, setTime] = useState(new Date());
@@ -52,7 +52,9 @@ export default function Home(): JSX.Element {
         <Weather />
         <HomeCalendar />
       </div>
-      <div className="[grid-area:content] overflow-y-auto p-4"></div>
+      <div className="[grid-area:content] overflow-y-auto p-4">
+        {/* TODO: Mood tracking component */}
+      </div>
     </div>
   );
 }

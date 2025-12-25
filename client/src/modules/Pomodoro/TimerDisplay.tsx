@@ -6,20 +6,12 @@ import {
   PlayIcon,
   StopCircle,
 } from "lucide-react";
-import { useEffect, useState, type JSX } from "react";
-import { usePomodoro, type PomodoroState } from "./usePomodoro";
-
-export interface TimerDisplayProps {
-  timeLeft: number;
-  state: PomodoroState;
-  onPause: () => void;
-  onReset: () => void;
-  onResume: () => void;
-}
+import { useState, type JSX } from "react";
+import { usePomodoroContext } from "./PomodoroContext";
 
 export default function TimerDisplay(): JSX.Element {
-  const { timeLeft, state, onStart, onPause, onReset, onResume } =
-    usePomodoro();
+  const { timeLeft, state, task, onStart, onPause, onReset, onResume } =
+    usePomodoroContext();
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -91,31 +83,25 @@ export default function TimerDisplay(): JSX.Element {
     }
   };
 
-  useEffect(() => {
-    if (minutes === 0 && seconds === 0 && state === "running") {
-      // Timer completed
-      debugger;
-    }
-  }, [minutes, seconds]);
-
   return (
     <>
       <div className="absolute right-4 top-4 z-50">
         <div
-          className={`flex items-center gap-3 px-3 py-2 rounded-md border transition-colors duration-200 shadow-sm bg-background/60 dark:bg-input/40 border-border/40`}
+          className={`flex items-center gap-2 px-3 py-2 rounded-md border transition-colors duration-200 shadow-sm bg-background/60 dark:bg-input/40 border-border/40`}
         >
+          {/* Timer display */}
           <div
-            className={`flex flex-col items-start select-none transition-all duration-150 ${
+            className={`text-center select-none transition-all duration-150 text-ellipsis overflow-hidden max-w-[150px] block whitespace-nowrap ${
               state === "running" ? "opacity-100" : "opacity-90"
             }`}
           >
-            <div
-              className={`text-lg md:text-xl font-medium tracking-wide text-foreground transform-gpu transition-transform duration-150  `}
-            >
+            <div className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
               {minutes.toString().padStart(2, "0")}:
               {seconds.toString().padStart(2, "0")}
             </div>
-            <div className="text-xs text-muted-foreground">Pomodoro</div>
+            <span className="text-xs text-muted-foreground mt-0.5">
+              {task?.name ? task.name : "Pomodoro"}
+            </span>
           </div>
 
           <div className="flex items-center gap-1">
@@ -126,9 +112,9 @@ export default function TimerDisplay(): JSX.Element {
 
       <Dialog open={showConfirmStop} onOpenChange={setShowConfirmStop}>
         <DialogContent>
-          <div className="p-4">
+          <>
             <p>Are you sure you want to stop the timer?</p>
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2 mt-1">
               <Button
                 variant="outline"
                 onClick={() => setShowConfirmStop(false)}
@@ -144,7 +130,7 @@ export default function TimerDisplay(): JSX.Element {
                 Stop
               </Button>
             </div>
-          </div>
+          </>
         </DialogContent>
       </Dialog>
     </>

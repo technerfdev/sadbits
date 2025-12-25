@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Obello from "./internal/Obello/Obello";
 import AppLayout from "./layouts/AppLayout";
 import NotFound from "./modules/Boundaries/NotFound";
+import { PomodoroProvider } from "./modules/Pomodoro/PomodoroContext";
 
 const ErrorBoundary = lazy(() => import("@/modules/Boundaries/ErrorBoundary"));
 const Home = lazy(() => import("@/modules/Home/Home"));
@@ -57,7 +58,11 @@ const mainRouter = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={mainRouter} />;
+  return (
+    <PomodoroProvider>
+      <RouterProvider router={mainRouter} />
+    </PomodoroProvider>
+  );
 }
 
 export default App;
