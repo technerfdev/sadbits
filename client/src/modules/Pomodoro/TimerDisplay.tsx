@@ -6,8 +6,9 @@ import {
   PlayIcon,
   StopCircle,
 } from "lucide-react";
-import { useState, type JSX } from "react";
-import { usePomodoroContext } from "./PomodoroContext";
+import { useState, useEffect, useRef, type JSX } from "react";
+import { DEFAULT_SESSION_TIME, usePomodoroContext } from "./PomodoroContext";
+import confetti from "canvas-confetti";
 
 export default function TimerDisplay(): JSX.Element {
   const { timeLeft, state, task, onStart, onPause, onReset, onResume } =
@@ -16,6 +17,19 @@ export default function TimerDisplay(): JSX.Element {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const [showConfirmStop, setShowConfirmStop] = useState<boolean>(false);
+  const prevStateRef = useRef<string>(state);
+
+  // Trigger confetti only on state transition to completed
+  useEffect(() => {
+    if (prevStateRef.current === "running" && state === "completed") {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    }
+    prevStateRef.current = state;
+  }, [state]);
 
   const RenderButtons = (): JSX.Element | null => {
     switch (state) {
@@ -24,7 +38,7 @@ export default function TimerDisplay(): JSX.Element {
           <Button
             variant={"outline"}
             size={"icon-lg"}
-            onClick={onStart}
+            onClick={() => onStart(DEFAULT_SESSION_TIME)}
             aria-label="Reset"
           >
             <CirclePlayIcon />

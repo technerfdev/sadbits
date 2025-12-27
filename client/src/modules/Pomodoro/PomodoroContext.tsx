@@ -34,7 +34,7 @@ const PomodoroContext = createContext<PomodoroContextType | undefined>(
 
 const PERSIST_KEY = "POMODORO_STATE_V1";
 
-const DEFAULT_SESSION_TIME: Session = 25;
+export const DEFAULT_SESSION_TIME: Session = 0.1;
 
 export function PomodoroProvider({
   children,
