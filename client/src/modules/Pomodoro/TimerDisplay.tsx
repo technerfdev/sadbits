@@ -1,14 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import confetti from "canvas-confetti";
 import {
   CirclePlayIcon,
+  Maximize2,
   PauseCircle,
   PlayIcon,
   StopCircle,
 } from "lucide-react";
-import { useState, useEffect, useRef, type JSX } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { DEFAULT_SESSION_TIME, usePomodoroContext } from "./PomodoroContext";
-import confetti from "canvas-confetti";
+import { PomodoroModal } from "./PomodoroModal";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function TimerDisplay(): JSX.Element {
   const { timeLeft, state, task, onStart, onPause, onReset, onResume } =
@@ -17,6 +24,7 @@ export default function TimerDisplay(): JSX.Element {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const [showConfirmStop, setShowConfirmStop] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
   const prevStateRef = useRef<string>(state);
 
   // Trigger confetti only on state transition to completed
@@ -100,9 +108,7 @@ export default function TimerDisplay(): JSX.Element {
   return (
     <>
       <div className="absolute right-4 top-4 z-50">
-        <div
-          className={`flex items-center gap-2 px-3 py-2 rounded-md border transition-colors duration-200 shadow-sm bg-background/60 dark:bg-input/40 border-border/40`}
-        >
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md border transition-colors duration-200 shadow-sm bg-background/60 dark:bg-input/40 border-border/40 pr-8">
           {/* Timer display */}
           <div
             className={`text-center select-none transition-all duration-150 text-ellipsis overflow-hidden max-w-[150px] block whitespace-nowrap ${
@@ -118,11 +124,26 @@ export default function TimerDisplay(): JSX.Element {
             </span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 relative">
             <RenderButtons />
           </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowModal(true)}
+                className="absolute top-2 right-2"
+              >
+                <Maximize2 size={12} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <span>Expand</span>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
+
+      <PomodoroModal open={showModal} onOpenChange={setShowModal} />
 
       <Dialog open={showConfirmStop} onOpenChange={setShowConfirmStop}>
         <DialogContent>

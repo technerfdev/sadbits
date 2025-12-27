@@ -8,7 +8,9 @@ import {
 import { toast } from "sonner";
 
 export type PomodoroState = "running" | "paused" | "stopped" | "completed";
-export type Session = 25 | 30 | 45 | 60 | 1;
+
+export const SessionValue = [5, 10, 15, 25, 30, 45, 60] as const;
+export type Session = (typeof SessionValue)[number];
 
 interface Task {
   id: string;
@@ -34,7 +36,12 @@ const PomodoroContext = createContext<PomodoroContextType | undefined>(
 
 const PERSIST_KEY = "POMODORO_STATE_V1";
 
-export const DEFAULT_SESSION_TIME: Session = 0.1;
+export const DEFAULT_SESSION_TIME: Session = 25;
+
+export function getDefaultSessionTime(): Session {
+  // TODO: get from user settings(localStorage)
+  return DEFAULT_SESSION_TIME;
+}
 
 export function PomodoroProvider({
   children,

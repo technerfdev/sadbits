@@ -19,7 +19,7 @@ import {
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
-import { Flag, FolderIcon } from "lucide-react";
+import { Flag, FolderIcon, Timer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import EditTaskDialog from "./Task/EditTaskDialog";
@@ -163,21 +163,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                   <PopoverTrigger>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-5 h-5 text-muted-foreground hover:text-foreground cursor-pointer"
-                          data-testid="start-pomodoro-icon"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.694a1.125 1.125 0 010 1.972l-11.54 6.694c-.75.412-1.667-.13-1.667-.986V5.653z"
-                          />
-                        </svg>
+                        <Timer size={24} />
                       </TooltipTrigger>
                       <TooltipContent>Start session</TooltipContent>
                     </Tooltip>
@@ -187,7 +173,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                       {Array.from([25, 30, 45, 60]).map((mins) => (
                         <div
                           key={mins}
-                          className="px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-accent transition-colors outline-none"
+                          className="px-3 py-2 text-xs rounded-md cursor-pointer hover:bg-accent transition-colors outline-none"
                           onClick={() => {
                             if (state !== "completed") {
                               setPendingSession(mins);
