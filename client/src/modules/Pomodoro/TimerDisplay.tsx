@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import confetti from "canvas-confetti";
 import {
   CirclePlayIcon,
@@ -11,18 +16,32 @@ import {
 import { useEffect, useRef, useState, type JSX } from "react";
 import { DEFAULT_SESSION_TIME, usePomodoroContext } from "./PomodoroContext";
 import { PomodoroModal } from "./PomodoroModal";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
+export const RenderTime = ({ timeLeft }: { timeLeft: number }): JSX.Element => {
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  if (mins >= 60) {
+    const hours = Math.floor(mins / 60);
+    const minsRemainder = mins % 60;
+    return (
+      <>
+        {hours && `${hours} : `}
+        {minsRemainder && minsRemainder.toString().padStart(2, "0") + " : "}
+        {secs.toString().padStart(2, "0")}
+      </>
+    );
+  }
+  return (
+    <>
+      {mins}:{secs.toString().padStart(2, "0")}
+    </>
+  );
+};
 
 export default function TimerDisplay(): JSX.Element {
   const { timeLeft, state, task, onStart, onPause, onReset, onResume } =
     usePomodoroContext();
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
   const [showConfirmStop, setShowConfirmStop] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const prevStateRef = useRef<string>(state);
@@ -116,8 +135,9 @@ export default function TimerDisplay(): JSX.Element {
             }`}
           >
             <div className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
-              {minutes.toString().padStart(2, "0")}:
-              {seconds.toString().padStart(2, "0")}
+              <span className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
+                <RenderTime timeLeft={timeLeft} />
+              </span>
             </div>
             <span className="text-xs text-muted-foreground mt-0.5">
               {task?.name ? task.name : "Pomodoro"}

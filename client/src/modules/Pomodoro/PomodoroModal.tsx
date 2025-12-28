@@ -1,26 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  CirclePlay,
-  CirclePlayIcon,
-  InfoIcon,
-  Minimize2,
-  PauseCircle,
-  PlayIcon,
-  StopCircle,
-} from "lucide-react";
-import {
-  SessionValue,
-  usePomodoroContext,
-  type Session,
-} from "./PomodoroContext";
-import confetti from "canvas-confetti";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,6 +17,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import confetti from "canvas-confetti";
+import {
+  CirclePlay,
+  CirclePlayIcon,
+  InfoIcon,
+  Minimize2,
+  PauseCircle,
+  PlayIcon,
+  StopCircle,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  SessionValue,
+  usePomodoroContext,
+  type Session,
+} from "./PomodoroContext";
+import { RenderTime } from "./TimerDisplay";
 
 interface PomodoroConfig {
   work: Session;
@@ -195,14 +196,11 @@ export function PomodoroModal({
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-7xl font-bold text-primary">
-                  {Math.floor(timeLeft / 60)
-                    .toString()
-                    .padStart(2, "0")}
-                  :{(timeLeft % 60).toString().padStart(2, "0")}
+                <div className="text-4xl font-bold text-primary">
+                  <RenderTime timeLeft={timeLeft} />
                 </div>
                 <div className="text-sm text-muted-foreground mt-3">
-                  {task?.name || "Pomodoro Session"}
+                  {task?.name || "Pomodoro"}
                 </div>
               </div>
             </div>
