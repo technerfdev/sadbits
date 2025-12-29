@@ -30,6 +30,8 @@ import ProjectDialog from "./Project/ProjectDialog";
 import ProjectItemRow from "./Project/ProjectItemRow";
 import AddTaskDialog from "./Task/AddTaskDialog";
 import TaskRow from "./TaskRow";
+import EmptyTasksIllustration from "@/components/illustrations/EmptyTasksIllustration";
+import { useCallback } from "react";
 
 function NewActions(): JSX.Element {
   const [opening, setOpening] = useState<"task" | "project" | null>(null);
@@ -65,6 +67,7 @@ function NewActions(): JSX.Element {
 }
 
 export default function TaskManagement(): JSX.Element {
+  const [openAddTask, setOpenAddTask] = useState(false);
   const [search, setSearch] = useState<string | null>(null);
   const [folderOpening, setFolderOpening] = useState<string | null>(null);
 
@@ -136,7 +139,16 @@ export default function TaskManagement(): JSX.Element {
         )}
         <ItemGroup className="gap-2">
           {!data?.tasks.length ? (
-            <span>No task</span>
+            <div data-testid="no-task-ctn" className="p-6">
+              <EmptyTasksIllustration />
+              <div className="flex justify-center mt-4">
+                <Button onClick={() => setOpenAddTask(true)}>Create Task</Button>
+              </div>
+              <AddTaskDialog
+                open={openAddTask}
+                onOpenChange={(open) => setOpenAddTask(open === true)}
+              />
+            </div>
           ) : (
             !loading &&
             data?.tasks?.map((task) => <TaskRow key={task.id} task={task} />)
