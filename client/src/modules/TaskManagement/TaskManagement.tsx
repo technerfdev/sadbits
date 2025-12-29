@@ -31,7 +31,6 @@ import ProjectItemRow from "./Project/ProjectItemRow";
 import AddTaskDialog from "./Task/AddTaskDialog";
 import TaskRow from "./TaskRow";
 import EmptyTasksIllustration from "@/components/illustrations/EmptyTasksIllustration";
-import { useCallback } from "react";
 
 function NewActions(): JSX.Element {
   const [opening, setOpening] = useState<"task" | "project" | null>(null);
@@ -99,6 +98,7 @@ export default function TaskManagement(): JSX.Element {
       clearTimeout(timer);
     };
   }, [search]);
+
   return (
     <div className="flex-1 flex-col pl-2 pr-2 space-y-4">
       <div className="flex flex-1 items-center gap-2">
@@ -142,7 +142,9 @@ export default function TaskManagement(): JSX.Element {
             <div data-testid="no-task-ctn" className="p-6">
               <EmptyTasksIllustration />
               <div className="flex justify-center mt-4">
-                <Button onClick={() => setOpenAddTask(true)}>Create Task</Button>
+                <Button onClick={() => setOpenAddTask(true)}>
+                  Create Task
+                </Button>
               </div>
               <AddTaskDialog
                 open={openAddTask}

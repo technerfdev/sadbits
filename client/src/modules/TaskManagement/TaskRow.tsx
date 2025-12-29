@@ -18,7 +18,7 @@ import {
   type UpdateTaskMutationVariables,
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { Flag, FolderIcon, Timer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -52,6 +52,7 @@ function PriorityFlag({ priority }: { priority: PriorityType }) {
 }
 
 export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
+  const client = useApolloClient();
   const { onStart: startPomodoro, state } = usePomodoroContext();
   const [hovering, setHovering] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
@@ -112,6 +113,16 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                     },
                   },
                 });
+
+                setTimeout(() => {
+                  client.cache.evict({
+                    id: client.cache.identify({
+                      __typename: "Task",
+                      id: task.id,
+                    }),
+                  });
+                  return;
+                }, 200);
               }}
             />
 

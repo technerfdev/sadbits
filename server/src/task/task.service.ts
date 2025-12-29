@@ -1,5 +1,5 @@
 import { UTCDate } from '@date-fns/utc';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { FilterBy } from 'src/common/dto/filter-by.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaServices } from '../prisma/prisma.service';
@@ -49,10 +49,6 @@ export class TaskService {
     }
 
     let project = null;
-    Logger.log({
-      projectId: task?.projectId,
-      task: task.id,
-    });
     if (task?.projectId) {
       project = await this.prisma.projects.findUnique({
         where: { id: task?.projectId },

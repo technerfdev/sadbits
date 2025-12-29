@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Obello from "./internal/Obello/Obello";
@@ -57,11 +57,24 @@ const mainRouter = createBrowserRouter([
   { path: "/internal", children: [{ path: "obello", Component: Obello }] },
 ]);
 
+const AppLoadingAnimation = () => {
+  return (
+    <div className="flex items-center justify-center w-full h-screen bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="text-sm text-muted-foreground">Loading...</div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   return (
-    <PomodoroProvider>
-      <RouterProvider router={mainRouter} />
-    </PomodoroProvider>
+    <Suspense fallback={<AppLoadingAnimation />}>
+      <PomodoroProvider>
+        <RouterProvider router={mainRouter} />
+      </PomodoroProvider>
+    </Suspense>
   );
 }
 

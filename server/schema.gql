@@ -56,8 +56,9 @@ type DeleteTaskResponse {
 }
 
 input FilterBy {
-  archived: Boolean
+  archived: Boolean = false
   completed: Boolean
+  projectId: String
   search: String
 }
 

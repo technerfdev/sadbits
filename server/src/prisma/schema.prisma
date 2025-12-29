@@ -44,6 +44,7 @@ model Projects {
   name        String    @db.VarChar(255)
   description String?   @db.VarChar(255)
   createdAt   DateTime? @map("created_at") @db.Timestamptz(6)
+  archived    Boolean?  @default(false)
   tasks       Tasks[]
 
   @@map("projects")

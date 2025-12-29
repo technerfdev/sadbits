@@ -13,8 +13,13 @@ export class FilterBy {
   @IsOptional()
   completed?: boolean;
 
-  @Field(() => Boolean, { nullable: true })
+  @Field(() => Boolean, { nullable: true, defaultValue: false })
   @IsBoolean()
   @IsOptional()
   archived?: boolean;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  projectId?: string;
 }

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaServices } from '../prisma/prisma.service';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
+import { FilterBy } from 'src/common/dto/filter-by.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -49,6 +50,15 @@ export class ProjectsService {
         name: existing.name + '(copy)',
         description: existing.description,
         createdAt: new UTCDate(),
+      },
+    });
+  }
+
+  getTasks(projectId: string, filterBy: Omit<FilterBy, 'projectId'>) {
+    return this.prisma.tasks.findMany({
+      where: {
+        ...filterBy,
+        projectId: projectId,
       },
     });
   }
