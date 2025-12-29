@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ContextMenu,
@@ -8,8 +9,19 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  DeleteTaskDocument,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   GetProjectsDocument,
   PriorityType,
   UpdateTaskDocument,
@@ -19,26 +31,14 @@ import {
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
+import { ContextMenuSub } from "@radix-ui/react-context-menu";
 import { Flag, FolderIcon, Timer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { usePomodoroContext } from "../Pomodoro/PomodoroContext";
+import { useDeleteWithUndo } from "./useDeleteWithUndo";
 import EditTaskDialog from "./Task/EditTaskDialog";
 import type { Task } from "./TaskManagement.interfaces";
-import { ContextMenuSub } from "@radix-ui/react-context-menu";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { usePomodoroContext } from "../Pomodoro/PomodoroContext";
-import { Button } from "@/components/ui/button";
 
 function PriorityFlag({ priority }: { priority: PriorityType }) {
   switch (priority) {
@@ -57,14 +57,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
   const [hovering, setHovering] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [pendingSession, setPendingSession] = useState<number | null>(null);
-  const [deleteTask] = useMutation(gql(DeleteTaskDocument.toString()), {
-    update: (cache) => {
-      cache.evict({
-        id: cache.identify({ __typename: "Task", id: task.id }),
-      });
-      cache.gc();
-    },
-  });
+  const { deleteWithUndo } = useDeleteWithUndo();
 
   const [updateTask, { loading: updating }] = useMutation<
     UpdateTaskMutation,
@@ -214,15 +207,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
           <ContextMenuItem
             inset
             className="px-2 py-1.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive transition-colors outline-none"
-            onClick={async () => {
-              const res = await deleteTask({ variables: { id: task.id } });
-              if (!res.data) {
-                toast.error("failed");
-                return;
-              }
-
-              toast.success("deleted");
-            }}
+            onClick={() => deleteWithUndo(task)}
           >
             Delete
           </ContextMenuItem>
@@ -232,7 +217,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
               <ContextMenuGroup>
                 <ContextMenuLabel>Projects</ContextMenuLabel>
                 <Separator />
-                {projectsData?.projects.map((project) => (
+                {projectsData?.projects?.filter(Boolean).map((project) => (
                   <ContextMenuItem
                     key={project.id}
                     className="px-2 py-1.5 rounded-md cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none"

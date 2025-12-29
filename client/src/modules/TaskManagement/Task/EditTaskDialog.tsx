@@ -36,10 +36,7 @@ export default function EditTaskDialog({
       cache.modify({
         id: cache.identify({ __typename: "Task", id: task.id }),
         fields: {
-          title: () => mutationData?.updateTask.title,
-          description: () => mutationData?.updateTask.description,
-          priority: () => mutationData?.updateTask.priority,
-          dueDate: () => mutationData?.updateTask.dueDate,
+          ...mutationData,
         },
       });
     },
@@ -47,7 +44,10 @@ export default function EditTaskDialog({
 
   const form = useForm<z.infer<typeof TaskSchema>>({
     resolver: TaskResolver,
-    defaultValues: task,
+    defaultValues: {
+      ...task,
+      projectId: task.projects?.id,
+    },
     shouldFocusError: true,
   });
 
@@ -67,14 +67,19 @@ export default function EditTaskDialog({
               await updateTask({
                 variables: {
                   task: {
-                    ...values,
+                    id: task.id,
+                    title: values.title,
+                    description: values.description,
+                    priority: values.priority,
+                    dueDate: values.dueDate?.toISOString(),
+                    projectId: values.projectId,
                   },
                 },
               });
               onOpenChange(false);
               form.reset();
-            } catch (e) {
-              toast.error(e?.message);
+            } catch (e: any) {
+              toast.error(e?.message || "Failed to update task");
             }
           }}
         />

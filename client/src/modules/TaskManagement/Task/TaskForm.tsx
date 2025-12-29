@@ -21,13 +21,20 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { PriorityType } from "@/gql/graphql";
+import {
+  GetProjectsDocument,
+  PriorityType,
+  type GetProjectsQuery,
+} from "@/gql/graphql";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Flag } from "lucide-react";
 import { type JSX } from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import type { Task } from "../TaskManagement.interfaces";
+import { useDeleteWithUndo } from "../useDeleteWithUndo";
 
 const schema = z.object({
   id: z.string().optional(),
@@ -44,6 +51,7 @@ const schema = z.object({
     .min(1, "Description is required")
     .optional()
     .nullable(),
+  projectId: z.string().optional().nullable(),
 });
 
 const resolver = zodResolver(schema);
@@ -62,6 +70,11 @@ export default function TaskForm({
   onDiscard: () => void;
   onSubmit: (value: z.infer<typeof schema>) => void;
 }): JSX.Element {
+  const { data: projectsData } = useQuery<GetProjectsQuery>(
+    gql(GetProjectsDocument.toString())
+  );
+  const { deleteWithUndo } = useDeleteWithUndo();
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -71,6 +84,12 @@ export default function TaskForm({
             control={form.control}
             render={({ field }) => (
               <FormItem>
+                <FormLabel>
+                  <span className="flex items-center">
+                    Title
+                    <span className="text-red-500"> *</span>
+                  </span>
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="Title" {...field} />
                 </FormControl>
@@ -139,25 +158,49 @@ export default function TaskForm({
             />
           </div>
 
-          {/* TODO: Mention input: tag, group/folder/project */}
           <FormField
-            name="tag"
+            name="projectId"
             control={form.control}
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Project</FormLabel>
                 <FormControl>
-                  {/* TODO : Fuield able to mentioned  */}
+                  <Select
+                    {...field}
+                    value={field.value ?? undefined}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {projectsData?.projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             name="description"
             control={form.control}
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="..." {...field} />
+                  <Textarea
+                    placeholder="..."
+                    {...field}
+                    value={field.value || ""}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -165,6 +208,14 @@ export default function TaskForm({
           />
         </div>
         <DialogFooter className="mt-8">
+          <Button
+            variant={"destructive"}
+            onClick={() => task && deleteWithUndo(task)}
+            className="mr-auto"
+            disabled={!task || loading}
+          >
+            Delete
+          </Button>
           <DialogClose asChild>
             <Button variant="secondary" disabled={form.formState.isSubmitting}>
               Discard

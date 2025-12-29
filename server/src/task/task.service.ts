@@ -113,6 +113,14 @@ export class TaskService {
         ...task,
         updatedAt: new UTCDate(),
       },
+      include: {
+        projects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     return updated;
