@@ -1,6 +1,10 @@
 import { UTCDate } from '@date-fns/utc';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
 import { PrismaServices } from '../prisma/prisma.service';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
@@ -61,5 +65,26 @@ export class ProjectsService {
         projectId: projectId,
       },
     });
+  }
+
+  async delete(projectId: string) {
+    if (!projectId || projectId.trim() === '' || !isValidUUID(projectId)) {
+      throw new BadRequestException('Project ID is invalid');
+    }
+
+    const existing = await this.prisma.projects.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Project not found');
+    }
+
+    await this.prisma.projects.update({
+      where: { id: projectId },
+      data: { archived: true, updatedAt: new UTCDate() },
+    });
+
+    return { success: true };
   }
 }

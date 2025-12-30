@@ -3,6 +3,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { Project } from './entities/project.entity';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
+import { DeleteProject } from './dto/delete-project.dto';
 
 @Resolver()
 export class ProjectsResolver {
@@ -26,5 +27,10 @@ export class ProjectsResolver {
   @Mutation(() => Project)
   updateProject(@Args('project') project: UpdateProjectInput) {
     return this.projectsService.update(project);
+  }
+
+  @Mutation(() => DeleteProject)
+  async deleteProject(@Args('projectId') id: string) {
+    return this.projectsService.delete(id);
   }
 }

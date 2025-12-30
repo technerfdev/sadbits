@@ -79,7 +79,22 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
   );
 
   const isOverdue = task.dueDate
-    ? new Date(task.dueDate) < new Date() && !task.completed
+    ? (() => {
+        const due = new Date(task.dueDate);
+        const now = new Date();
+        const dueDateOnly = new Date(
+          due.getFullYear(),
+          due.getMonth(),
+          due.getDate()
+        );
+        const todayOnly = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        return dueDateOnly < todayOnly && !task.completed;
+      })()
     : false;
 
   return (
@@ -167,7 +182,7 @@ export default function TaskRow({ task }: { task: Task; selected?: boolean }) {
                   <PopoverTrigger>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Timer size={24} />
+                        <Timer size={18} />
                       </TooltipTrigger>
                       <TooltipContent>Start session</TooltipContent>
                     </Tooltip>

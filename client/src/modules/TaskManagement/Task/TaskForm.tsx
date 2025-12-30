@@ -208,14 +208,16 @@ export default function TaskForm({
           />
         </div>
         <DialogFooter className="mt-8">
-          <Button
-            variant={"destructive"}
-            onClick={() => task && deleteWithUndo(task)}
-            className="mr-auto"
-            disabled={!task || loading}
-          >
-            Delete
-          </Button>
+          {task && (
+            <Button
+              variant={"destructive"}
+              onClick={() => task && deleteWithUndo(task)}
+              className="mr-auto"
+              disabled={loading}
+            >
+              Delete
+            </Button>
+          )}
           <DialogClose asChild>
             <Button variant="secondary" disabled={form.formState.isSubmitting}>
               Discard

@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 
 import { Response } from 'express';
@@ -37,9 +38,6 @@ export class GlobalHTTPException implements ExceptionFilter {
 
     // TODO: expose exception to 3rd
     response.status(status).json({
-      success: false,
-      statusCode: status,
-      error,
       message,
       timestamp: new Date().toISOString(),
     });
