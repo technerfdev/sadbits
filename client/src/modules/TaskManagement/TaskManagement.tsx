@@ -122,6 +122,7 @@ export default function TaskManagement(): JSX.Element {
           <ul>
             {projectsData?.projects.map((p) => (
               <ProjectItemRow
+                key={p.id}
                 project={p}
                 onClick={() => {
                   if (folderOpening === p.id) {

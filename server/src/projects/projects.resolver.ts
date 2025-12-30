@@ -4,14 +4,15 @@ import { CreateProjectInput } from './dto/project-input.dto';
 import { Project } from './entities/project.entity';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
 import { DeleteProject } from './dto/delete-project.dto';
+import { ProjectFilterBy } from './dto/project-filterby.dto';
 
 @Resolver()
 export class ProjectsResolver {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Query(() => [Project])
-  projects() {
-    return this.projectsService.getAll();
+  projects(@Args('filterBy', { nullable: true }) filterBy?: ProjectFilterBy) {
+    return this.projectsService.getAll({ filterBy });
   }
 
   @Mutation(() => Project)

@@ -52,19 +52,25 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type DeleteProject {
+  success: Boolean!
+}
+
 type DeleteTaskResponse {
   success: Boolean!
 }
 
 input FilterBy {
-  archived: Boolean
+  archived: Boolean = false
   completed: Boolean
+  projectId: String
   search: String
 }
 
 type Mutation {
   createProject(project: CreateProjectInput!): Project!
   createTask(task: CreateTaskInputDto!): Task!
+  deleteProject(projectId: String!): DeleteProject!
   deleteTask(id: ID!): DeleteTaskResponse!
   duplicateProject(projectId: String!): Project!
   updateProject(project: UpdateProjectInput!): Project!
@@ -85,6 +91,11 @@ type Project {
   name: String!
 }
 
+input ProjectFilterBy {
+  archived: Boolean = false
+  search: String
+}
+
 type ProjectSummary {
   id: ID!
   name: String!
@@ -92,7 +103,7 @@ type ProjectSummary {
 
 type Query {
   cloudflareAnalytics(since: String, until: String): Analytics!
-  projects: [Project!]!
+  projects(filterBy: ProjectFilterBy): [Project!]!
   task(id: ID!): Task!
   tasks(filterBy: FilterBy = {archived: false, completed: false}): [Task!]!
 }

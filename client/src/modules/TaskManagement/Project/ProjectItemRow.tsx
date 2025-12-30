@@ -7,10 +7,14 @@ import {
 } from "@/components/ui/context-menu";
 import { Input } from "@/components/ui/input";
 import {
-  CreateProjectDocument,
+  DeleteProjectDocument,
+  DuplicateProjectDocument,
+  GetProjectsDocument,
   UpdateProjectDocument,
-  type CreateProjectMutation,
-  type CreateProjectMutationVariables,
+  type DeleteProjectMutation,
+  type DeleteProjectMutationVariables,
+  type DuplicateProjectMutation,
+  type DuplicateProjectMutationVariables,
   type UpdateProjectMutation,
   type UpdateProjectMutationVariables,
 } from "@/gql/graphql";
@@ -57,6 +61,29 @@ export default function ProjectItemRow({
         },
       });
     },
+  });
+
+  const [deleteProject, { loading: deleting }] = useMutation<
+    DeleteProjectMutation,
+    DeleteProjectMutationVariables
+  >(gql(DeleteProjectDocument.toString()), {
+    update: (cache, { data: deleteData }) => {
+      if (!deleteData?.deleteProject.success) return;
+      cache.evict({
+        id: cache.identify({ __typename: "Project", id: project.id }),
+      });
+    },
+  });
+
+  const [duplicateProject] = useMutation<
+    DuplicateProjectMutation,
+    DuplicateProjectMutationVariables
+  >(gql(DuplicateProjectDocument.toString()), {
+    refetchQueries: [
+      {
+        query: gql(GetProjectsDocument.toString()),
+      },
+    ],
   });
 
   const renderIcon = () => {
@@ -133,11 +160,21 @@ export default function ProjectItemRow({
         <ContextMenuItem onClick={() => setMode("renaming")}>
           Rename
         </ContextMenuItem>
-        <ContextMenuItem>
+        <ContextMenuItem
+          onClick={async () => {
+            await duplicateProject({ variables: { projectId: project.id } });
+          }}
+        >
           <CopyIcon />
           Duplicate
         </ContextMenuItem>
-        <ContextMenuItem className="hover:text-red-500">
+        <ContextMenuItem
+          className="hover:text-red-500"
+          onClick={() =>
+            deleteProject({ variables: { projectId: project.id } })
+          }
+          disabled={deleting}
+        >
           <TrashIcon />
           Delete
         </ContextMenuItem>

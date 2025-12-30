@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   CreateProjectDocument,
+  GetProjectsDocument,
   type CreateProjectMutation,
   type CreateProjectMutationVariables,
 } from "@/gql/graphql";
@@ -49,7 +50,13 @@ export default function ProjectDialog({
   const [createProject] = useMutation<
     CreateProjectMutation,
     CreateProjectMutationVariables
-  >(gql(CreateProjectDocument.toString()));
+  >(gql(CreateProjectDocument.toString()), {
+    refetchQueries: [
+      {
+        query: gql(GetProjectsDocument.toString()),
+      },
+    ],
+  });
 
   const form = useForm<ProjectType>({
     resolver: createProjectResolver,

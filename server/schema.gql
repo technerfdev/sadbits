@@ -90,6 +90,11 @@ type Project {
   name: String!
 }
 
+input ProjectFilterBy {
+  archived: Boolean = false
+  search: String
+}
+
 type ProjectSummary {
   id: ID!
   name: String!
@@ -97,7 +102,7 @@ type ProjectSummary {
 
 type Query {
   cloudflareAnalytics(since: String, until: String): Analytics!
-  projects: [Project!]!
+  projects(filterBy: ProjectFilterBy): [Project!]!
   task(id: ID!): Task!
   tasks(filterBy: FilterBy = {archived: false, completed: false}): [Task!]!
 }

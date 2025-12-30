@@ -9,13 +9,38 @@ import { PrismaServices } from '../prisma/prisma.service';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
 import { FilterBy } from 'src/common/dto/filter-by.dto';
+import { ProjectFilterBy } from './dto/project-filterby.dto';
+import { OrderBy } from 'src/common/dto/order-by.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaServices) {}
 
-  getAll() {
-    return this.prisma.projects.findMany();
+  getAll({
+    filterBy,
+    orderBy,
+  }: {
+    filterBy?: ProjectFilterBy;
+    orderBy?: OrderBy;
+  }) {
+    return this.prisma.projects.findMany({
+      where: {
+        ...filterBy,
+        archived: filterBy?.archived ?? false,
+      },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+        ...(orderBy
+          ? [
+              {
+                [orderBy.field]: orderBy.direction,
+              },
+            ]
+          : []),
+      ],
+    });
   }
 
   create(input: CreateProjectInput) {

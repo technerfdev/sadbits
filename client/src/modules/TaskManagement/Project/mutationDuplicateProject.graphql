@@ -1,0 +1,5 @@
+mutation DuplicateProject($projectId: String!) {
+  duplicateProject(projectId: $projectId) {
+    id
+  }
+}

@@ -1,4 +1,4 @@
-mutation DeleteProject($projectId: ID!) {
+mutation DeleteProject($projectId: String!) {
   deleteProject(projectId: $projectId) {
     success
   }

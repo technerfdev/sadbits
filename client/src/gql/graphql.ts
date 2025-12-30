@@ -63,6 +63,11 @@ export type CreateTaskInputDto = {
   updatedBy?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type DeleteProject = {
+  __typename?: 'DeleteProject';
+  success: Scalars['Boolean']['output'];
+};
+
 export type DeleteTaskResponse = {
   __typename?: 'DeleteTaskResponse';
   success: Scalars['Boolean']['output'];
@@ -71,6 +76,7 @@ export type DeleteTaskResponse = {
 export type FilterBy = {
   archived?: InputMaybe<Scalars['Boolean']['input']>;
   completed?: InputMaybe<Scalars['Boolean']['input']>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -78,6 +84,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createProject: Project;
   createTask: Task;
+  deleteProject: DeleteProject;
   deleteTask: DeleteTaskResponse;
   duplicateProject: Project;
   updateProject: Project;
@@ -92,6 +99,11 @@ export type MutationCreateProjectArgs = {
 
 export type MutationCreateTaskArgs = {
   task: CreateTaskInputDto;
+};
+
+
+export type MutationDeleteProjectArgs = {
+  projectId: Scalars['String']['input'];
 };
 
 
@@ -129,6 +141,11 @@ export type Project = {
   name: Scalars['String']['output'];
 };
 
+export type ProjectFilterBy = {
+  archived?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type ProjectSummary = {
   __typename?: 'ProjectSummary';
   id: Scalars['ID']['output'];
@@ -147,6 +164,11 @@ export type Query = {
 export type QueryCloudflareAnalyticsArgs = {
   since?: InputMaybe<Scalars['String']['input']>;
   until?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryProjectsArgs = {
+  filterBy?: InputMaybe<ProjectFilterBy>;
 };
 
 
@@ -210,6 +232,20 @@ export type CreateProjectMutationVariables = Exact<{
 
 
 export type CreateProjectMutation = { __typename?: 'Mutation', createProject: { __typename?: 'Project', id: string, name: string, description?: string | null } };
+
+export type DeleteProjectMutationVariables = Exact<{
+  projectId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteProjectMutation = { __typename?: 'Mutation', deleteProject: { __typename?: 'DeleteProject', success: boolean } };
+
+export type DuplicateProjectMutationVariables = Exact<{
+  projectId: Scalars['String']['input'];
+}>;
+
+
+export type DuplicateProjectMutation = { __typename?: 'Mutation', duplicateProject: { __typename?: 'Project', id: string } };
 
 export type UpdateProjectMutationVariables = Exact<{
   project: UpdateProjectInput;
@@ -317,6 +353,20 @@ export const CreateProjectDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CreateProjectMutation, CreateProjectMutationVariables>;
+export const DeleteProjectDocument = new TypedDocumentString(`
+    mutation DeleteProject($projectId: String!) {
+  deleteProject(projectId: $projectId) {
+    success
+  }
+}
+    `) as unknown as TypedDocumentString<DeleteProjectMutation, DeleteProjectMutationVariables>;
+export const DuplicateProjectDocument = new TypedDocumentString(`
+    mutation DuplicateProject($projectId: String!) {
+  duplicateProject(projectId: $projectId) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<DuplicateProjectMutation, DuplicateProjectMutationVariables>;
 export const UpdateProjectDocument = new TypedDocumentString(`
     mutation UpdateProject($project: UpdateProjectInput!) {
   updateProject(project: $project) {
