@@ -1,4 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Task } from 'src/task/entities/task.entity';
+import { AssociatedTasks } from '../dto/associated-tasks.dto';
 
 @ObjectType()
 export class Project {
@@ -13,4 +15,7 @@ export class Project {
 
   @Field(() => Date)
   created_at?: Date;
+
+  @Field(() => AssociatedTasks, { nullable: true })
+  associatedTasks?: AssociatedTasks;
 }

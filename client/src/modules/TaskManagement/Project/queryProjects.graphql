@@ -3,5 +3,8 @@ query GetProjects {
     id
     name
     description
+    associatedTasks {
+      total
+    }
   }
 }

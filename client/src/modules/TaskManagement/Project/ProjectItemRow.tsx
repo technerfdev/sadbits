@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -25,7 +26,7 @@ import { useEffect, useState } from "react";
 import type { ProjectType } from "./project.type";
 
 interface ProjectItemRowProps {
-  project: Pick<ProjectType, "name" | "description" | "id">;
+  project: Pick<ProjectType, "name" | "description" | "id" | "associatedTasks">;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> | React.ReactNode;
 }
@@ -152,6 +153,11 @@ export default function ProjectItemRow({
             >
               {renderIcon()}
               <span>{project.name}</span>
+
+              {project.associatedTasks?.total &&
+                project.associatedTasks.total > 0 && (
+                  <Badge>{project.associatedTasks.total}</Badge>
+                )}
             </button>
           </div>
         )}

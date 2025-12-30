@@ -139,4 +139,26 @@ export class TaskService {
     }
     return raw;
   }
+
+  async getTasksViaProjectId(projectId: string): Promise<{
+    total: number;
+    tasks: Task[];
+  }> {
+    const tasks = await this.prisma.tasks.findMany({
+      where: {
+        projectId: projectId,
+      },
+    });
+
+    if (!tasks.length) {
+      return {
+        total: 0,
+        tasks: [],
+      };
+    }
+    return {
+      total: tasks.length,
+      tasks: tasks,
+    };
+  }
 }

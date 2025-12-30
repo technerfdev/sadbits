@@ -28,6 +28,11 @@ type AnalyticsTotals {
   uniques: Int!
 }
 
+type AssociatedTasks {
+  tasks: [Task]
+  total: Int!
+}
+
 input CreateProjectInput {
   description: String
   name: String!
@@ -85,6 +90,7 @@ enum PriorityType {
 }
 
 type Project {
+  associatedTasks: AssociatedTasks
   created_at: DateTime!
   description: String
   id: ID!

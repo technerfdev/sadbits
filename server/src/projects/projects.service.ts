@@ -4,13 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
+import { OrderBy } from 'src/common/dto/order-by.dto';
+import { validate as isValidUUID, v4 as uuidv4 } from 'uuid';
 import { PrismaServices } from '../prisma/prisma.service';
+import { ProjectFilterBy } from './dto/project-filterby.dto';
 import { CreateProjectInput } from './dto/project-input.dto';
 import { UpdateProjectInput } from './dto/update-project-input.dto';
-import { FilterBy } from 'src/common/dto/filter-by.dto';
-import { ProjectFilterBy } from './dto/project-filterby.dto';
-import { OrderBy } from 'src/common/dto/order-by.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -27,6 +26,12 @@ export class ProjectsService {
       where: {
         ...filterBy,
         archived: filterBy?.archived ?? false,
+      },
+      include: {
+        tasks: true,
+        _count: {
+          select: { tasks: true },
+        },
       },
       orderBy: [
         {
@@ -79,15 +84,6 @@ export class ProjectsService {
         name: existing.name + '(copy)',
         description: existing.description,
         createdAt: new UTCDate(),
-      },
-    });
-  }
-
-  getTasks(projectId: string, filterBy: Omit<FilterBy, 'projectId'>) {
-    return this.prisma.tasks.findMany({
-      where: {
-        ...filterBy,
-        projectId: projectId,
       },
     });
   }

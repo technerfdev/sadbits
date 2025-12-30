@@ -44,6 +44,12 @@ export type AnalyticsTotals = {
   uniques: Scalars['Int']['output'];
 };
 
+export type AssociatedTasks = {
+  __typename?: 'AssociatedTasks';
+  tasks?: Maybe<Array<Maybe<Task>>>;
+  total: Scalars['Int']['output'];
+};
+
 export type CreateProjectInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -135,6 +141,7 @@ export enum PriorityType {
 
 export type Project = {
   __typename?: 'Project';
+  associatedTasks?: Maybe<AssociatedTasks>;
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -257,7 +264,7 @@ export type UpdateProjectMutation = { __typename?: 'Mutation', updateProject: { 
 export type GetProjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProjectsQuery = { __typename?: 'Query', projects: Array<{ __typename?: 'Project', id: string, name: string, description?: string | null }> };
+export type GetProjectsQuery = { __typename?: 'Query', projects: Array<{ __typename?: 'Project', id: string, name: string, description?: string | null, associatedTasks?: { __typename?: 'AssociatedTasks', total: number } | null }> };
 
 export type TaskFragmentFragment = { __typename?: 'Task', id: string, title: string, description?: string | null, priority?: PriorityType | null, completed: boolean, dueDate?: any | null, archived?: boolean | null, projects?: { __typename?: 'ProjectSummary', id: string, name: string } | null };
 
@@ -380,6 +387,9 @@ export const GetProjectsDocument = new TypedDocumentString(`
     id
     name
     description
+    associatedTasks {
+      total
+    }
   }
 }
     `) as unknown as TypedDocumentString<GetProjectsQuery, GetProjectsQueryVariables>;

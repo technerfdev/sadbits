@@ -23,14 +23,20 @@ import {
 } from "@/gql/graphql";
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
-import { FolderIcon, FolderOpenIcon, PlusCircleIcon } from "lucide-react";
+import {
+  FolderIcon,
+  FolderOpenIcon,
+  PlusCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
 import ProjectDialog from "./Project/ProjectDialog";
 import ProjectItemRow from "./Project/ProjectItemRow";
 import AddTaskDialog from "./Task/AddTaskDialog";
 import TaskRow from "./TaskRow";
-import EmptyTasksIllustration from "@/components/illustrations/EmptyTasksIllustration";
+import EmptyTasksIllustration from "./EmptyTasksIllustration";
+import { Badge } from "@/components/ui/badge";
 
 function NewActions(): JSX.Element {
   const [opening, setOpening] = useState<"task" | "project" | null>(null);
@@ -74,6 +80,13 @@ export default function TaskManagement(): JSX.Element {
     GetTasksQuery,
     GetTasksQueryVariables
   >(gql(GetTasksDocument.toString()), {
+    variables: {
+      filterBy: {
+        ...(folderOpening && { projectId: folderOpening }),
+        completed: false,
+        archived: false,
+      },
+    },
     fetchPolicy: "cache-and-network",
   });
 
@@ -139,7 +152,16 @@ export default function TaskManagement(): JSX.Element {
           </ul>
         )}
         <ItemGroup className="gap-2">
-          {!data?.tasks.length ? (
+          {folderOpening && (
+            <Badge variant={"outline"}>
+              Filter by project:{" "}
+              {projectsData?.projects.find((p) => p.id === folderOpening)?.name}
+              <button onClick={() => setFolderOpening(null)} aria-label="Clear">
+                <XIcon size={14} />
+              </button>
+            </Badge>
+          )}
+          {!loading && !data?.tasks.length ? (
             <div data-testid="no-task-ctn" className="p-6">
               <EmptyTasksIllustration />
               <div className="flex justify-center mt-4">
