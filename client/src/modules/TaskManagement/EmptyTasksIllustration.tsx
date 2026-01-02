@@ -87,10 +87,10 @@ export default function EmptyTasksIllustration({
 
       <div className="mt-4 text-center">
         <div className="text-lg font-semibold text-foreground">
-          No tasks yet
+          All tasks are done
         </div>
         <div className="text-sm text-muted-foreground mt-1">
-          Create your first task to get things done
+          Create your next task
         </div>
       </div>
     </div>

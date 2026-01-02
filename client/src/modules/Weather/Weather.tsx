@@ -1,5 +1,6 @@
+import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { CloudIcon, Loader2 } from "lucide-react";
+import { CloudIcon, Loader2, RefreshCcwIcon } from "lucide-react";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
 
@@ -15,47 +16,48 @@ export default function Weather(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchWeather = async () => {
+    try {
+      setLoading(true);
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        }
+      );
+
+      const { latitude, longitude } = position.coords;
+
+      const response = await axios.get(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
+      );
+
+      const { current_weather } = response.data;
+
+      const geocodeResponse = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+      );
+
+      const location =
+        geocodeResponse.data.address.city ||
+        geocodeResponse.data.address.town ||
+        geocodeResponse.data.address.village ||
+        "Unknown";
+
+      setWeather({
+        location,
+        temperature: Math.round(current_weather.temperature),
+        description: getWeatherDescription(current_weather.weathercode),
+        icon: getWeatherIcon(current_weather.weathercode),
+      });
+    } catch (err) {
+      console.error({ error });
+      setError("Unable to fetch weather data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        setLoading(true);
-        const position = await new Promise<GeolocationPosition>(
-          (resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          }
-        );
-
-        const { latitude, longitude } = position.coords;
-
-        const response = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
-        );
-
-        const { current_weather } = response.data;
-
-        const geocodeResponse = await axios.get(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        );
-
-        const location =
-          geocodeResponse.data.address.city ||
-          geocodeResponse.data.address.town ||
-          geocodeResponse.data.address.village ||
-          "Unknown";
-
-        setWeather({
-          location,
-          temperature: Math.round(current_weather.temperature),
-          description: getWeatherDescription(current_weather.weathercode),
-          icon: getWeatherIcon(current_weather.weathercode),
-        });
-      } catch (err) {
-        setError("Unable to fetch weather data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWeather();
   }, []);
 
@@ -101,6 +103,15 @@ export default function Weather(): JSX.Element {
       <div className="flex items-center gap-2 p-4 rounded-lg bg-background border border-border/40">
         <CloudIcon className="h-5 w-5 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">{error}</span>
+
+        <Button
+          size={"icon-sm"}
+          className="ml-auto text-muted-foreground"
+          variant={"ghost"}
+          onClick={fetchWeather}
+        >
+          <RefreshCcwIcon />
+        </Button>
       </div>
     );
   }

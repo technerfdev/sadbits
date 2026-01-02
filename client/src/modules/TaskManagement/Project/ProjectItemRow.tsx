@@ -153,11 +153,10 @@ export default function ProjectItemRow({
             >
               {renderIcon()}
               <span>{project.name}</span>
-
               {project.associatedTasks?.total &&
-                project.associatedTasks.total > 0 && (
-                  <Badge>{project.associatedTasks.total}</Badge>
-                )}
+              project.associatedTasks.total > 0 ? (
+                <Badge>{project.associatedTasks.total}</Badge>
+              ) : null}
             </button>
           </div>
         )}

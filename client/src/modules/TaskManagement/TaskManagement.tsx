@@ -131,7 +131,7 @@ export default function TaskManagement(): JSX.Element {
         </div>
       </div>
       <div className="grid grid-cols-[10rem_1fr]">
-        {projectsData?.projects && (
+        {projectsData?.projects.length && (
           <ul>
             {projectsData?.projects.map((p) => (
               <ProjectItemRow
